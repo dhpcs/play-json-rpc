@@ -45,7 +45,7 @@ lazy val publishSettings = Seq(
       devConnection = Some("scm:git:git@github.com:dhpcs/play-json-rpc.git")
     )),
   bintrayOrganization := Some("dhpcs"),
-  bintrayPackageLabels := Seq("play", "json", "rpc", "scala"),
+  bintrayPackageLabels := Seq("scala", "json-rpc"),
   bintrayReleaseOnPublish := false
 )
 

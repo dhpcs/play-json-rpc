@@ -3,7 +3,9 @@ play-json-rpc
 
 [![Build status](https://travis-ci.org/dhpcs/play-json-rpc.svg?branch=master)](https://travis-ci.org/dhpcs/play-json-rpc)
 [![codecov](https://codecov.io/gh/dhpcs/play-json-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dhpcs/play-json-rpc)
+[![Dependencies](https://app.updateimpact.com/badge/835521161172488192/play-json-rpc-root.svg?config=compile)](https://app.updateimpact.com/latest/835521161172488192/play-json-rpc-root)
 [![Download](https://api.bintray.com/packages/dhpcs/maven/play-json-rpc/images/download.svg)](https://bintray.com/dhpcs/maven/play-json-rpc/_latestVersion)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A Scala library providing implicit [play-json Formats](https://www.playframework.com/documentation/2.5.x/ScalaJson) for
 [JSON-RPC 2.0](http://www.jsonrpc.org/specification) messages, built on top of the Play Framework's standalone
@@ -17,16 +19,6 @@ SBT dependency
 resolvers += Resolver.bintrayRepo("dhpcs", "maven")
 
 libraryDependencies += "com.dhpcs" %% "play-json-rpc" % "1.4.1"
-```
-
-
-Gradle dependency
------------------
-
-```groovy
-dependencies {
-    compile 'com.dhpcs:play-json-rpc_2.11:1.4.1'
-}
 ```
 
 

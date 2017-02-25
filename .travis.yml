@@ -8,8 +8,7 @@ jdk:
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean scalafmtTest coverage test coverageReport
-  - sbt ++$TRAVIS_SCALA_VERSION coverageAggregate
 
 after_success:
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sbt ++$TRAVIS_SCALA_VERSION updateImpactSubmit; fi'
   - bash <(curl -s https://codecov.io/bash)
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sbt ++$TRAVIS_SCALA_VERSION updateImpactSubmit; fi'
