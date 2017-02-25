@@ -11,4 +11,5 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION coverageAggregate
 
 after_success:
- - bash <(curl -s https://codecov.io/bash)
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sbt ++$TRAVIS_SCALA_VERSION updateImpactSubmit; fi'
+  - bash <(curl -s https://codecov.io/bash)
