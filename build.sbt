@@ -95,6 +95,9 @@ lazy val playJsonRpcExample = project
   )
   .dependsOn(playJsonRpc)
   .dependsOn(playJsonRpcTestkit)
+  .settings(
+    coverageEnabled := false
+  )
 
 lazy val root = project
   .in(file("."))
