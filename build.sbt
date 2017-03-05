@@ -45,8 +45,7 @@ lazy val publishSettings = Seq(
       devConnection = Some("scm:git:git@github.com:dhpcs/play-json-rpc.git")
     )),
   bintrayOrganization := Some("dhpcs"),
-  bintrayPackageLabels := Seq("scala", "json-rpc"),
-  bintrayReleaseOnPublish := false
+  bintrayPackageLabels := Seq("scala", "json-rpc")
 )
 
 lazy val noopPublishSettings = Seq(
@@ -58,21 +57,24 @@ lazy val playJson = "com.typesafe.play" %% "play-json" % "2.5.12"
 
 lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1"
 
-lazy val playJsonRpcTestkit = project
+lazy val playJsonTestkit = project
   .in(file("testkit"))
   .settings(commonSettings)
   .settings(publishSettings)
   .settings(
-    name := "play-json-rpc-testkit"
+    name := "play-json-testkit"
   )
   .settings(
     libraryDependencies ++= Seq(
       playJson,
       scalaTest
     ))
+  .settings(
+    coverageEnabled := false
+  )
 
 lazy val playJsonRpc = project
-  .in(file("play-json-rpc"))
+  .in(file("rpc"))
   .settings(commonSettings)
   .settings(publishSettings)
   .settings(
@@ -81,20 +83,19 @@ lazy val playJsonRpc = project
   .settings(libraryDependencies ++= Seq(
     playJson
   ))
-  .dependsOn(playJsonRpcTestkit % Test)
+  .dependsOn(playJsonTestkit % Test)
   .settings(libraryDependencies ++= Seq(
     scalaTest % Test
   ))
 
-lazy val playJsonRpcExample = project
-  .in(file("example"))
+lazy val playJsonRpcMarshalling = project
+  .in(file("marshalling"))
   .settings(commonSettings)
-  .settings(noopPublishSettings)
+  .settings(publishSettings)
   .settings(
-    name := "play-json-rpc-example"
+    name := "play-json-rpc-marshalling"
   )
   .dependsOn(playJsonRpc)
-  .dependsOn(playJsonRpcTestkit)
   .settings(
     coverageEnabled := false
   )
@@ -107,7 +108,7 @@ lazy val root = project
     name := "play-json-rpc-root"
   )
   .aggregate(
-    playJsonRpcTestkit,
+    playJsonTestkit,
     playJsonRpc,
-    playJsonRpcExample
+    playJsonRpcMarshalling
   )
