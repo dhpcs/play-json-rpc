@@ -1,6 +1,6 @@
 package com.dhpcs.jsonrpc
 
-import com.dhpcs.jsonrpc.JsonRpcMessage.CorrelationId
+import com.dhpcs.jsonrpc.JsonRpcMessage.{ArrayParams, CorrelationId, NoParams, ObjectParams}
 import com.dhpcs.jsonrpc.ResponseCompanion.ErrorResponse
 import play.api.libs.json._
 
@@ -16,12 +16,11 @@ trait CommandCompanion[A] {
   def read(jsonRpcRequestMessage: JsonRpcRequestMessage): Option[JsResult[_ <: A]] =
     for (reads <- methodReads.get(jsonRpcRequestMessage.method))
       yield
-        jsonRpcRequestMessage.params.fold[JsResult[A]](
-          ifEmpty = JsError("command parameters must be given")
-        ) {
-          case Left(_) => JsError("command parameters must be named")
-          case Right(jsObject) =>
-            reads.reads(jsObject) match {
+        jsonRpcRequestMessage.params match {
+          case NoParams       => JsError("command parameters must be given")
+          case ArrayParams(_) => JsError("command parameters must be named")
+          case ObjectParams(value) =>
+            reads.reads(value) match {
               // We just do this to reset the path in the success case.
               case JsError(invalid)    => JsError(invalid)
               case JsSuccess(valid, _) => JsSuccess(valid)
@@ -32,7 +31,7 @@ trait CommandCompanion[A] {
     val (method, writes) =
       classWrites.getOrElse(command.getClass, sys.error(s"No format found for ${command.getClass}"))
     val bWrites = writes.asInstanceOf[OWrites[B]]
-    JsonRpcRequestMessage(method, Some(Right(bWrites.writes(command))), id)
+    JsonRpcRequestMessage(method, ObjectParams(bWrites.writes(command)), id)
   }
 }
 
@@ -84,12 +83,11 @@ trait NotificationCompanion[A] {
   def read(jsonRpcNotificationMessage: JsonRpcNotificationMessage): Option[JsResult[_ <: A]] =
     for (reads <- methodReads.get(jsonRpcNotificationMessage.method))
       yield
-        jsonRpcNotificationMessage.params.fold[JsResult[A]](
-          ifEmpty = JsError("command parameters must be given")
-        ) {
-          case Left(_) => JsError("notification parameters must be named")
-          case Right(jsObject) =>
-            reads.reads(jsObject) match {
+        jsonRpcNotificationMessage.params match {
+          case NoParams       => JsError("command parameters must be given")
+          case ArrayParams(_) => JsError("notification parameters must be named")
+          case ObjectParams(value) =>
+            reads.reads(value) match {
               // We just do this to reset the path in the success case.
               case JsError(invalid)    => JsError(invalid)
               case JsSuccess(valid, _) => JsSuccess(valid)
@@ -100,7 +98,7 @@ trait NotificationCompanion[A] {
     val (method, writes) =
       classWrites.getOrElse(notification.getClass, sys.error(s"No format found for ${notification.getClass}"))
     val bWrites = writes.asInstanceOf[OWrites[B]]
-    JsonRpcNotificationMessage(method, Some(Right(bWrites.writes(notification))))
+    JsonRpcNotificationMessage(method, ObjectParams(bWrites.writes(notification)))
   }
 }
 

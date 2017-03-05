@@ -1,21 +1,23 @@
 package com.dhpcs.jsonrpc
 
+import com.dhpcs.jsonrpc.JsonRpcMessage._
+import com.dhpcs.jsonrpc.JsonRpcMessage.ParamsOps._
 import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json._
-import com.dhpcs.jsonrpc.JsonRpcMessage._
 
 import scala.collection.Seq
 
-sealed trait JsonRpcMessage
+sealed abstract class JsonRpcMessage
 
 object JsonRpcMessage {
 
   final val Version = "2.0"
 
-  sealed trait CorrelationId
+  sealed abstract class CorrelationId
+
   object CorrelationId {
     implicit final val CorrelationIdFormat: Format[CorrelationId] =
       new Format[CorrelationId] {
@@ -23,9 +25,7 @@ object JsonRpcMessage {
           case JsNull          => JsSuccess(NoCorrelationId)
           case JsString(value) => JsSuccess(StringCorrelationId(value))
           case JsNumber(value) => JsSuccess(NumericCorrelationId(value))
-          case JsBoolean(_)    => JsError()
-          case JsArray(_)      => JsError()
-          case JsObject(_)     => JsError()
+          case _               => JsError()
         }
 
         override def writes(correlationId: CorrelationId): JsValue = correlationId match {
@@ -39,6 +39,43 @@ object JsonRpcMessage {
   case object NoCorrelationId                        extends CorrelationId
   case class StringCorrelationId(value: String)      extends CorrelationId
   case class NumericCorrelationId(value: BigDecimal) extends CorrelationId
+
+  sealed abstract class Params {
+    def unlift: Option[SomeParams]
+  }
+
+  object ParamsOps {
+    implicit class RichSomeParamsOpt(value: Option[SomeParams]) extends AnyRef {
+      def lift: Params = value.getOrElse(NoParams)
+    }
+  }
+
+  case object NoParams extends Params {
+    override def unlift: Option[SomeParams] = None
+  }
+
+  sealed abstract class SomeParams extends Params {
+    override def unlift: Option[SomeParams] = Some(this)
+  }
+
+  object SomeParams {
+    implicit final val SomeParamsFormat: Format[SomeParams] =
+      new Format[SomeParams] {
+        override def reads(json: JsValue): JsResult[SomeParams] = json match {
+          case jsArray: JsArray  => JsSuccess(ArrayParams(jsArray))
+          case jsValue: JsObject => JsSuccess(ObjectParams(jsValue))
+          case _                 => JsError(ValidationError(Seq("error.expected.jsarray")))
+        }
+
+        override def writes(someParams: SomeParams): JsValue = someParams match {
+          case ArrayParams(value)  => value
+          case ObjectParams(value) => value
+        }
+      }
+  }
+
+  case class ArrayParams(value: JsArray)   extends SomeParams
+  case class ObjectParams(value: JsObject) extends SomeParams
 
   implicit final val JsonRpcMessageFormat: Format[JsonRpcMessage] = new Format[JsonRpcMessage] {
     override def reads(json: JsValue): JsResult[JsonRpcMessage] =
@@ -67,8 +104,6 @@ object JsonRpcMessage {
     }
   }
 
-  implicit final val ParamsFormat: Format[Either[JsArray, JsObject]] = eitherValueFormat[JsArray, JsObject]
-
   def eitherObjectFormat[A: Format, B: Format](leftKey: String, rightKey: String): Format[Either[A, B]] =
     OFormat(
       (__ \ rightKey).read[B].map(b => Right(b): Either[A, B]) orElse
@@ -91,21 +126,21 @@ object JsonRpcMessage {
 
 }
 
-case class JsonRpcRequestMessage(method: String, params: Option[Either[JsArray, JsObject]], id: CorrelationId)
-    extends JsonRpcMessage
+case class JsonRpcRequestMessage(method: String, params: Params, id: CorrelationId) extends JsonRpcMessage
 
 object JsonRpcRequestMessage {
   implicit final val JsonRpcRequestMessageFormat: Format[JsonRpcRequestMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
-      // formatNullable allows the key and value to be completely absent
-      (__ \ "params").formatNullable[Either[JsArray, JsObject]] and
-      // optionWithNull requires that the key is present but permits the value to be null
+      (__ \ "params").formatNullable[SomeParams] and
       (__ \ "id").format[CorrelationId]
   )(
-    (_, method, params, id) => JsonRpcRequestMessage(method, params, id),
+    (_, method, params, id) => JsonRpcRequestMessage(method, params.lift, id),
     jsonRpcRequestMessage =>
-      (JsonRpcMessage.Version, jsonRpcRequestMessage.method, jsonRpcRequestMessage.params, jsonRpcRequestMessage.id)
+      (JsonRpcMessage.Version,
+       jsonRpcRequestMessage.method,
+       jsonRpcRequestMessage.params.unlift,
+       jsonRpcRequestMessage.id)
   )
 }
 
@@ -140,7 +175,6 @@ object JsonRpcResponseMessage {
   implicit final val JsonRpcResponseMessageFormat: Format[JsonRpcResponseMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       __.format(eitherObjectFormat[JsonRpcResponseError, JsValue]("error", "result")) and
-      // optionWithNull requires that the key is present but permits the value to be null
       (__ \ "id").format[CorrelationId]
   )(
     (_, errorOrResult, id) => JsonRpcResponseMessage(errorOrResult, id),
@@ -164,17 +198,17 @@ object JsonRpcResponseMessageBatch {
   )
 }
 
-case class JsonRpcNotificationMessage(method: String, params: Option[Either[JsArray, JsObject]]) extends JsonRpcMessage
+case class JsonRpcNotificationMessage(method: String, params: Params) extends JsonRpcMessage
 
 object JsonRpcNotificationMessage {
   implicit final val JsonRpcNotificationMessageFormat: Format[JsonRpcNotificationMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
-      (__ \ "params").formatNullable[Either[JsArray, JsObject]]
+      (__ \ "params").formatNullable[SomeParams]
   )(
-    (_, method, params) => JsonRpcNotificationMessage(method, params),
+    (_, method, params) => JsonRpcNotificationMessage(method, params.lift),
     jsonRpcNotificationMessage =>
-      (JsonRpcMessage.Version, jsonRpcNotificationMessage.method, jsonRpcNotificationMessage.params)
+      (JsonRpcMessage.Version, jsonRpcNotificationMessage.method, jsonRpcNotificationMessage.params.unlift)
   )
 }
 

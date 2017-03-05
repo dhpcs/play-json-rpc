@@ -1,7 +1,7 @@
 package com.dhpcs.jsonrpc
 
 import com.dhpcs.json.JsResultUniformity
-import com.dhpcs.jsonrpc.JsonRpcMessage.{CorrelationId, NumericCorrelationId}
+import com.dhpcs.jsonrpc.JsonRpcMessage.{ArrayParams, CorrelationId, NumericCorrelationId, ObjectParams}
 import com.dhpcs.jsonrpc.Message.MessageFormats
 import com.dhpcs.jsonrpc.MessageCompanionsSpec._
 import com.dhpcs.jsonrpc.ResponseCompanion.ErrorResponse
@@ -14,9 +14,9 @@ import play.api.libs.json._
 
 object MessageCompanionsSpec {
 
-  sealed trait Message
+  sealed abstract class Message
 
-  sealed trait Command                              extends Message
+  sealed abstract class Command                     extends Message
   case class UpdateAccountCommand(account: Account) extends Command
   case class AddTransactionCommand(from: Int,
                                    to: Int,
@@ -59,8 +59,8 @@ object MessageCompanionsSpec {
     )
   }
 
-  sealed trait Response                            extends Message
-  sealed trait ResultResponse                      extends Response
+  sealed abstract class Response                   extends Message
+  sealed abstract class ResultResponse             extends Response
   case object UpdateAccountResponse                extends ResultResponse
   case class AddTransactionResponse(created: Long) extends ResultResponse
 
@@ -71,7 +71,7 @@ object MessageCompanionsSpec {
     )
   }
 
-  sealed trait Notification                                         extends Message
+  sealed abstract class Notification                                extends Message
   case class AccountUpdatedNotification(account: Account)           extends Notification
   case class TransactionAddedNotification(transaction: Transaction) extends Notification
 
@@ -134,7 +134,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       it should behave like commandReadError(
         JsonRpcRequestMessage(
           method = "invalidMethod",
-          params = Some(Right(Json.obj())),
+          ObjectParams(Json.obj()),
           NumericCorrelationId(1)
         ),
         None
@@ -145,7 +145,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like commandReadError(
           JsonRpcRequestMessage(
             method = "addTransaction",
-            params = Some(Left(Json.arr())),
+            ArrayParams(Json.arr()),
             NumericCorrelationId(1)
           ),
           Some(
@@ -160,7 +160,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like commandReadError(
           JsonRpcRequestMessage(
             method = "addTransaction",
-            params = Some(Right(Json.obj())),
+            ObjectParams(Json.obj()),
             NumericCorrelationId(1)
           ),
           Some(
@@ -187,18 +187,17 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       implicit val id = NumericCorrelationId(1)
       implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
         "addTransaction",
-        Some(
-          Right(
-            Json.obj(
-              "from"        -> 0,
-              "to"          -> 1,
-              "value"       -> BigDecimal(1000000),
-              "description" -> "Property purchase",
-              "metadata" -> Json.obj(
-                "property" -> "The TARDIS"
-              )
+        ObjectParams(
+          Json.obj(
+            "from"        -> 0,
+            "to"          -> 1,
+            "value"       -> BigDecimal(1000000),
+            "description" -> "Property purchase",
+            "metadata" -> Json.obj(
+              "property" -> "The TARDIS"
             )
-          )),
+          )
+        ),
         NumericCorrelationId(1)
       )
       it should behave like commandRead
@@ -246,7 +245,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       it should behave like notificationReadError(
         JsonRpcNotificationMessage(
           method = "invalidMethod",
-          params = Some(Right(Json.obj()))
+          ObjectParams(Json.obj())
         ),
         jsError = None
       )
@@ -256,7 +255,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like notificationReadError(
           JsonRpcNotificationMessage(
             method = "transactionAdded",
-            params = Some(Left(Json.arr()))
+            ArrayParams(Json.arr())
           ),
           Some(
             JsError(
@@ -270,7 +269,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like notificationReadError(
           JsonRpcNotificationMessage(
             method = "transactionAdded",
-            params = Some(Right(Json.obj()))
+            ObjectParams(Json.obj())
           ),
           Some(
             JsError(
@@ -290,11 +289,9 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       )
       implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "transactionAdded",
-        params = Some(
-          Right(
-            Json.obj(
-              "transaction" -> Json.parse("""{"from":0,"to":1,"value":1000000,"created":1434115187612}""")
-            )
+        params = ObjectParams(
+          Json.obj(
+            "transaction" -> Json.parse("""{"from":0,"to":1,"value":1000000,"created":1434115187612}""")
           )
         )
       )

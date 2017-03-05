@@ -1,7 +1,14 @@
 package com.dhpcs.jsonrpc
 
 import com.dhpcs.json.FormatBehaviors
-import com.dhpcs.jsonrpc.JsonRpcMessage.{NoCorrelationId, NumericCorrelationId, StringCorrelationId}
+import com.dhpcs.jsonrpc.JsonRpcMessage.{
+  ArrayParams,
+  NoCorrelationId,
+  NoParams,
+  NumericCorrelationId,
+  ObjectParams,
+  StringCorrelationId
+}
 import org.scalatest.{FunSpec, Matchers}
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
@@ -108,16 +115,16 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("without params") {
       implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
         "testMethod",
-        params = None,
+        NoParams,
         NumericCorrelationId(1)
       )
       implicit val jsonRpcRequestMessageJson = Json.parse(
         """
-        |{
-        |  "jsonrpc":"2.0",
-        |  "method":"testMethod",
-        |  "id":1
-        |}""".stripMargin
+          |{
+          |  "jsonrpc":"2.0",
+          |  "method":"testMethod",
+          |  "id":1
+          |}""".stripMargin
       )
       it should behave like read
       it should behave like write
@@ -139,14 +146,11 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       describe("and a null id") {
         implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
-          params = Some(
-            Left(
-              JsArray(
-                Seq(
-                  JsString("param1"),
-                  JsString("param2")
-                )
-              ))),
+          ArrayParams(
+            Json.arr(
+              JsString("param1"),
+              JsString("param2")
+            )),
           NoCorrelationId
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -164,14 +168,11 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       describe("and a string id") {
         implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
-          params = Some(
-            Left(
-              JsArray(
-                Seq(
-                  JsString("param1"),
-                  JsString("param2")
-                )
-              ))),
+          ArrayParams(
+            Json.arr(
+              JsString("param1"),
+              JsString("param2")
+            )),
           StringCorrelationId("one")
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -189,14 +190,11 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       describe("and a numeric id") {
         implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
-          params = Some(
-            Left(
-              JsArray(
-                Seq(
-                  JsString("param1"),
-                  JsString("param2")
-                )
-              ))),
+          ArrayParams(
+            Json.arr(
+              JsString("param1"),
+              JsString("param2")
+            )),
           NumericCorrelationId(1)
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -213,14 +211,11 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         describe("with a fractional part") {
           implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
             method = "testMethod",
-            params = Some(
-              Left(
-                JsArray(
-                  Seq(
-                    JsString("param1"),
-                    JsString("param2")
-                  )
-                ))),
+            ArrayParams(
+              Json.arr(
+                JsString("param1"),
+                JsString("param2")
+              )),
             NumericCorrelationId(1.1)
           )
           implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -240,14 +235,11 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       describe("and a null id") {
         implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
-          params = Some(
-            Right(
-              JsObject(
-                Seq(
-                  "param1" -> JsString("param1"),
-                  "param2" -> JsString("param2")
-                )
-              ))),
+          ObjectParams(
+            Json.obj(
+              "param1" -> JsString("param1"),
+              "param2" -> JsString("param2")
+            )),
           NoCorrelationId
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -265,14 +257,11 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       describe("and a string id") {
         implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
-          params = Some(
-            Right(
-              JsObject(
-                Seq(
-                  "param1" -> JsString("param1"),
-                  "param2" -> JsString("param2")
-                )
-              ))),
+          ObjectParams(
+            Json.obj(
+              "param1" -> JsString("param1"),
+              "param2" -> JsString("param2")
+            )),
           StringCorrelationId("one")
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -290,14 +279,12 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       describe("and a numeric id") {
         implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
-          params = Some(
-            Right(
-              JsObject(
-                Seq(
-                  "param1" -> JsString("param1"),
-                  "param2" -> JsString("param2")
-                )
-              ))),
+          ObjectParams(
+            Json.obj(
+              "param1" -> JsString("param1"),
+              "param2" -> JsString("param2")
+            )
+          ),
           NumericCorrelationId(1)
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -314,14 +301,12 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         describe("with a fractional part") {
           implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
             method = "testMethod",
-            params = Some(
-              Right(
-                JsObject(
-                  Seq(
-                    "param1" -> JsString("param1"),
-                    "param2" -> JsString("param2")
-                  )
-                ))),
+            ObjectParams(
+              Json.obj(
+                "param1" -> JsString("param1"),
+                "param2" -> JsString("param2")
+              )
+            ),
             NumericCorrelationId(1.1)
           )
           implicit val jsonRpcRequestMessageJson = Json.parse(
@@ -372,14 +357,12 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
           Right(
             JsonRpcRequestMessage(
               method = "testMethod",
-              params = Some(
-                Right(
-                  JsObject(
-                    Seq(
-                      "param1" -> JsString("param1"),
-                      "param2" -> JsString("param2")
-                    )
-                  ))),
+              ObjectParams(
+                Json.obj(
+                  "param1" -> JsString("param1"),
+                  "param2" -> JsString("param2")
+                )
+              ),
               NumericCorrelationId(1)
             ))
         )
@@ -415,16 +398,13 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         Seq(
           Left(
             JsonRpcNotificationMessage(method = "testMethod",
-                                       params = Some(
-                                         Right(
-                                           JsObject(
-                                             Seq(
-                                               "param1" -> JsString("param1"),
-                                               "param2" -> JsString("param2")
-                                             )
-                                           )
+                                       ObjectParams(
+                                         Json.obj(
+                                           "param1" -> JsString("param1"),
+                                           "param2" -> JsString("param2")
                                          )
-                                       )))
+                                       ))
+          )
         )
       )
       implicit val jsonRpcRequestMessageBatchJson = Json.parse(
@@ -864,7 +844,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("without params") {
       implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "testMethod",
-        params = None
+        NoParams
       )
       implicit val jsonRpcNotificationMessageJson = Json.parse(
         """
@@ -879,14 +859,12 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("with a params array") {
       implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "testMethod",
-        params = Some(
-          Left(
-            JsArray(
-              Seq(
-                JsString("param1"),
-                JsString("param2")
-              )
-            )))
+        ArrayParams(
+          Json.arr(
+            JsString("param1"),
+            JsString("param2")
+          )
+        )
       )
       implicit val jsonRpcNotificationMessageJson = Json.parse(
         """
@@ -902,14 +880,12 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("with a params object") {
       implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "testMethod",
-        params = Some(
-          Right(
-            JsObject(
-              Seq(
-                "param1" -> JsString("param1"),
-                "param2" -> JsString("param2")
-              )
-            )))
+        ObjectParams(
+          Json.obj(
+            "param1" -> JsString("param1"),
+            "param2" -> JsString("param2")
+          )
+        )
       )
       implicit val jsonRpcNotificationMessageJson = Json.parse(
         """
