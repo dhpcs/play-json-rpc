@@ -184,36 +184,36 @@ object JsonRpcResponseError {
 
   def parseError(exception: Throwable): JsonRpcResponseError = rpcError(
     ParseErrorCode,
-    "Parse error",
-    "Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.",
-    Some(JsString(exception.getMessage))
+    message = "Parse error",
+    meaning = "Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.",
+    error = Some(JsString(exception.getMessage))
   )
 
   def invalidRequest(errors: Seq[(JsPath, Seq[ValidationError])]): JsonRpcResponseError = rpcError(
     InvalidRequestCode,
-    "Invalid Request",
-    "The JSON sent is not a valid Request object.",
-    Some(JsError.toJson(errors))
+    message = "Invalid Request",
+    meaning = "The JSON sent is not a valid Request object.",
+    error = Some(JsError.toJson(errors))
   )
 
   def methodNotFound(method: String): JsonRpcResponseError = rpcError(
     MethodNotFoundCode,
-    "Method not found",
-    "The method does not exist / is not available.",
-    Some(JsString(s"""The method "$method" is not implemented."""))
+    message = "Method not found",
+    meaning = "The method does not exist / is not available.",
+    error = Some(JsString(s"""The method "$method" is not implemented."""))
   )
 
   def invalidParams(errors: Seq[(JsPath, Seq[ValidationError])]): JsonRpcResponseError = rpcError(
     InvalidParamsCode,
-    "Invalid params",
-    "Invalid method parameter(s).",
-    Some(JsError.toJson(errors))
+    message = "Invalid params",
+    meaning = "Invalid method parameter(s).",
+    error = Some(JsError.toJson(errors))
   )
 
   def internalError(error: Option[JsValue] = None): JsonRpcResponseError = rpcError(
     InternalErrorCode,
-    "Invalid params",
-    "Internal JSON-RPC error.",
+    message = "Invalid params",
+    meaning = "Internal JSON-RPC error.",
     error
   )
 
@@ -221,8 +221,8 @@ object JsonRpcResponseError {
     require(code >= ServerErrorCodeFloor && code <= ServerErrorCodeCeiling)
     rpcError(
       InternalErrorCode,
-      "Invalid params",
-      "Internal JSON-RPC error.",
+      message = "Invalid params",
+      meaning = "Internal JSON-RPC error.",
       error
     )
   }
@@ -231,7 +231,7 @@ object JsonRpcResponseError {
     new JsonRpcResponseError(
       code,
       message,
-      Some(
+      data = Some(
         Json.obj(
           ("meaning" -> meaning: (String, JsValueWrapper)) ::
             error.fold[List[(String, JsValueWrapper)]](ifEmpty = Nil)(
