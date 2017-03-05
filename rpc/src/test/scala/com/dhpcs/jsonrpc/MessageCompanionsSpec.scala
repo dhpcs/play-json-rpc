@@ -1,6 +1,7 @@
 package com.dhpcs.jsonrpc
 
 import com.dhpcs.json.JsResultUniformity
+import com.dhpcs.jsonrpc.JsonRpcMessage.{CorrelationId, NumericCorrelationId}
 import com.dhpcs.jsonrpc.Message.MessageFormats
 import com.dhpcs.jsonrpc.MessageCompanionsSpec._
 import com.dhpcs.jsonrpc.ResponseCompanion.ErrorResponse
@@ -134,7 +135,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         JsonRpcRequestMessage(
           method = "invalidMethod",
           params = Some(Right(Json.obj())),
-          id = Some(Right(1))
+          NumericCorrelationId(1)
         ),
         None
       )
@@ -145,7 +146,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           JsonRpcRequestMessage(
             method = "addTransaction",
             params = Some(Left(Json.arr())),
-            id = Some(Right(1))
+            NumericCorrelationId(1)
           ),
           Some(
             JsError(
@@ -160,7 +161,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           JsonRpcRequestMessage(
             method = "addTransaction",
             params = Some(Right(Json.obj())),
-            id = Some(Right(1))
+            NumericCorrelationId(1)
           ),
           Some(
             JsError(
@@ -183,7 +184,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           )
         )
       )
-      implicit val id = Right(BigDecimal(1))
+      implicit val id = NumericCorrelationId(1)
       implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
         "addTransaction",
         Some(
@@ -198,7 +199,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
               )
             )
           )),
-        Some(Right(1))
+        NumericCorrelationId(1)
       )
       it should behave like commandRead
       it should behave like commandWrite
@@ -211,7 +212,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like responseReadError(
           JsonRpcResponseMessage(
             errorOrResult = Right(Json.obj()),
-            id = Some(Right(1))
+            NumericCorrelationId(1)
           ),
           "addTransaction",
           JsError(
@@ -226,14 +227,14 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       AddTransactionResponse(
         created = 1434115187612L
       ))
-    implicit val id = Right(BigDecimal(1))
+    implicit val id = NumericCorrelationId(1)
     implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
       Right(
         Json.obj(
           "created" -> 1434115187612L
         )
       ),
-      Some(Right(1))
+      NumericCorrelationId(1)
     )
     implicit val method = "addTransaction"
     it should behave like responseRead
@@ -316,10 +317,10 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
     )
 
   private[this] def commandWrite(implicit command: Command,
-                                 id: Either[String, BigDecimal],
+                                 id: CorrelationId,
                                  jsonRpcRequestMessage: JsonRpcRequestMessage) =
     it(s"should encode to $jsonRpcRequestMessage")(
-      Command.write(command, Some(id)) should be(jsonRpcRequestMessage)
+      Command.write(command, id) should be(jsonRpcRequestMessage)
     )
 
   private[this] def responseReadError(jsonRpcResponseMessage: JsonRpcResponseMessage,
@@ -338,10 +339,10 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
     )
 
   private[this] def responseWrite(implicit errorOrResponse: Either[ErrorResponse, ResultResponse],
-                                  id: Either[String, BigDecimal],
+                                  id: CorrelationId,
                                   jsonRpcResponseMessage: JsonRpcResponseMessage) =
     it(s"should encode to $jsonRpcResponseMessage")(
-      Response.write(errorOrResponse, Some(id)) should be(jsonRpcResponseMessage)
+      Response.write(errorOrResponse, id) should be(jsonRpcResponseMessage)
     )
 
   private[this] def notificationReadError(jsonRpcNotificationMessage: JsonRpcNotificationMessage,

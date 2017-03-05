@@ -15,6 +15,31 @@ object JsonRpcMessage {
 
   final val Version = "2.0"
 
+  sealed trait CorrelationId
+  object CorrelationId {
+    implicit final val CorrelationIdFormat: Format[CorrelationId] =
+      new Format[CorrelationId] {
+        override def reads(json: JsValue): JsResult[CorrelationId] = json match {
+          case JsNull          => JsSuccess(NoCorrelationId)
+          case JsString(value) => JsSuccess(StringCorrelationId(value))
+          case JsNumber(value) => JsSuccess(NumericCorrelationId(value))
+          case JsBoolean(_)    => JsError()
+          case JsArray(_)      => JsError()
+          case JsObject(_)     => JsError()
+        }
+
+        override def writes(correlationId: CorrelationId): JsValue = correlationId match {
+          case NoCorrelationId             => JsNull
+          case StringCorrelationId(value)  => JsString(value)
+          case NumericCorrelationId(value) => JsNumber(value)
+        }
+      }
+  }
+
+  case object NoCorrelationId                        extends CorrelationId
+  case class StringCorrelationId(value: String)      extends CorrelationId
+  case class NumericCorrelationId(value: BigDecimal) extends CorrelationId
+
   implicit final val JsonRpcMessageFormat: Format[JsonRpcMessage] = new Format[JsonRpcMessage] {
     override def reads(json: JsValue): JsResult[JsonRpcMessage] =
       (
@@ -42,7 +67,6 @@ object JsonRpcMessage {
     }
   }
 
-  implicit final val IdFormat: Format[Either[String, BigDecimal]]    = eitherValueFormat[String, BigDecimal]
   implicit final val ParamsFormat: Format[Either[JsArray, JsObject]] = eitherValueFormat[JsArray, JsObject]
 
   def eitherObjectFormat[A: Format, B: Format](leftKey: String, rightKey: String): Format[Either[A, B]] =
@@ -67,9 +91,7 @@ object JsonRpcMessage {
 
 }
 
-case class JsonRpcRequestMessage(method: String,
-                                 params: Option[Either[JsArray, JsObject]],
-                                 id: Option[Either[String, BigDecimal]])
+case class JsonRpcRequestMessage(method: String, params: Option[Either[JsArray, JsObject]], id: CorrelationId)
     extends JsonRpcMessage
 
 object JsonRpcRequestMessage {
@@ -79,7 +101,7 @@ object JsonRpcRequestMessage {
       // formatNullable allows the key and value to be completely absent
       (__ \ "params").formatNullable[Either[JsArray, JsObject]] and
       // optionWithNull requires that the key is present but permits the value to be null
-      (__ \ "id").format(Format.optionWithNull[Either[String, BigDecimal]])
+      (__ \ "id").format[CorrelationId]
   )(
     (_, method, params, id) => JsonRpcRequestMessage(method, params, id),
     jsonRpcRequestMessage =>
@@ -111,8 +133,7 @@ object JsonRpcRequestMessageBatch {
   )
 }
 
-case class JsonRpcResponseMessage(errorOrResult: Either[JsonRpcResponseError, JsValue],
-                                  id: Option[Either[String, BigDecimal]])
+case class JsonRpcResponseMessage(errorOrResult: Either[JsonRpcResponseError, JsValue], id: CorrelationId)
     extends JsonRpcMessage
 
 object JsonRpcResponseMessage {
@@ -120,7 +141,7 @@ object JsonRpcResponseMessage {
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       __.format(eitherObjectFormat[JsonRpcResponseError, JsValue]("error", "result")) and
       // optionWithNull requires that the key is present but permits the value to be null
-      (__ \ "id").format(Format.optionWithNull[Either[String, BigDecimal]])
+      (__ \ "id").format[CorrelationId]
   )(
     (_, errorOrResult, id) => JsonRpcResponseMessage(errorOrResult, id),
     jsonRpcResponseMessage => (JsonRpcMessage.Version, jsonRpcResponseMessage.errorOrResult, jsonRpcResponseMessage.id)

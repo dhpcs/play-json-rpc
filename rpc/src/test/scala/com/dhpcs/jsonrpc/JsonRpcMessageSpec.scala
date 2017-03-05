@@ -1,6 +1,7 @@
 package com.dhpcs.jsonrpc
 
 import com.dhpcs.json.FormatBehaviors
+import com.dhpcs.jsonrpc.JsonRpcMessage.{NoCorrelationId, NumericCorrelationId, StringCorrelationId}
 import org.scalatest.{FunSpec, Matchers}
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
@@ -107,8 +108,8 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("without params") {
       implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
         "testMethod",
-        None,
-        Some(Right(1))
+        params = None,
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcRequestMessageJson = Json.parse(
         """
@@ -146,7 +147,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   JsString("param2")
                 )
               ))),
-          id = None
+          NoCorrelationId
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
           """
@@ -171,7 +172,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   JsString("param2")
                 )
               ))),
-          id = Some(Left("one"))
+          StringCorrelationId("one")
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
           """
@@ -196,7 +197,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   JsString("param2")
                 )
               ))),
-          id = Some(Right(1))
+          NumericCorrelationId(1)
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
           """
@@ -220,7 +221,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                     JsString("param2")
                   )
                 ))),
-            id = Some(Right(1.1))
+            NumericCorrelationId(1.1)
           )
           implicit val jsonRpcRequestMessageJson = Json.parse(
             """{
@@ -247,7 +248,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   "param2" -> JsString("param2")
                 )
               ))),
-          id = None
+          NoCorrelationId
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
           """
@@ -272,7 +273,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   "param2" -> JsString("param2")
                 )
               ))),
-          id = Some(Left("one"))
+          StringCorrelationId("one")
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
           """
@@ -297,7 +298,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   "param2" -> JsString("param2")
                 )
               ))),
-          id = Some(Right(1))
+          NumericCorrelationId(1)
         )
         implicit val jsonRpcRequestMessageJson = Json.parse(
           """
@@ -321,7 +322,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                     "param2" -> JsString("param2")
                   )
                 ))),
-            id = Some(Right(1.1))
+            NumericCorrelationId(1.1)
           )
           implicit val jsonRpcRequestMessageJson = Json.parse(
             """
@@ -379,7 +380,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                       "param2" -> JsString("param2")
                     )
                   ))),
-              id = Some(Right(1))
+              NumericCorrelationId(1)
             ))
         )
       )
@@ -524,7 +525,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("with a parse error") {
       implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
         errorOrResult = Left(JsonRpcResponseError.parseError(new Throwable("Boom"))),
-        id = Some(Right(1))
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
         """
@@ -542,7 +543,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         errorOrResult = Left(
           JsonRpcResponseError.invalidRequest(
             errors = Seq((__ \ "method", Seq(ValidationError("error.path.missing")))))),
-        id = Some(Right(1))
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
         """
@@ -558,7 +559,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("with a method not found error") {
       implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
         errorOrResult = Left(JsonRpcResponseError.methodNotFound("foo")),
-        id = Some(Right(1))
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
         """
@@ -575,7 +576,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
         errorOrResult = Left(
           JsonRpcResponseError.invalidParams(errors = Seq((__ \ "arg1", Seq(ValidationError("error.path.missing")))))),
-        id = Some(Right(1))
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
         """
@@ -591,7 +592,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("with an internal error") {
       implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
         errorOrResult = Left(JsonRpcResponseError.internalError()),
-        id = Some(Right(1))
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
         """
@@ -607,7 +608,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("with a server error") {
       implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
         errorOrResult = Left(JsonRpcResponseError.serverError(code = JsonRpcResponseError.ServerErrorCodeFloor)),
-        id = Some(Right(1))
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
         """
@@ -623,7 +624,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     describe("with an application error") {
       implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
         errorOrResult = Left(JsonRpcResponseError.applicationError(code = -31999, message = "Boom")),
-        id = Some(Right(1))
+        NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
         """
@@ -646,7 +647,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                 "param2" -> JsString("param2")
               )
             )),
-          id = None
+          NoCorrelationId
         )
         implicit val jsonRpcResponseMessageJson = Json.parse(
           """
@@ -668,7 +669,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                 "param2" -> JsString("param2")
               )
             )),
-          id = Some(Left("one"))
+          StringCorrelationId("one")
         )
         implicit val jsonRpcResponseMessageJson = Json.parse(
           """
@@ -690,7 +691,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                 "param2" -> JsString("param2")
               )
             )),
-          id = Some(Right(1))
+          NumericCorrelationId(1)
         )
         implicit val jsonRpcResponseMessageJson = Json.parse(
           """
@@ -711,7 +712,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   "param2" -> JsString("param2")
                 )
               )),
-            id = Some(Right(1.1))
+            NumericCorrelationId(1.1)
           )
           implicit val jsonRpcResponseMessageJson = Json.parse(
             """
@@ -764,7 +765,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
                   "param2" -> JsString("param2")
                 )
               )),
-            id = Some(Right(1))
+            NumericCorrelationId(1)
           )
         )
       )

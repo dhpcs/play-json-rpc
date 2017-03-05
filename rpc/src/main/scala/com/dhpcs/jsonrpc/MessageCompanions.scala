@@ -1,5 +1,6 @@
 package com.dhpcs.jsonrpc
 
+import com.dhpcs.jsonrpc.JsonRpcMessage.CorrelationId
 import com.dhpcs.jsonrpc.ResponseCompanion.ErrorResponse
 import play.api.libs.json._
 
@@ -27,7 +28,7 @@ trait CommandCompanion[A] {
             }
         }
 
-  def write[B <: A](command: B, id: Option[Either[String, BigDecimal]]): JsonRpcRequestMessage = {
+  def write[B <: A](command: B, id: CorrelationId): JsonRpcRequestMessage = {
     val (method, writes) =
       classWrites.getOrElse(command.getClass, sys.error(s"No format found for ${command.getClass}"))
     val bWrites = writes.asInstanceOf[OWrites[B]]
@@ -52,8 +53,7 @@ trait ResponseCompanion[A] {
         }
     }
 
-  def write[B <: A](response: Either[ErrorResponse, B],
-                    id: Option[Either[String, BigDecimal]]): JsonRpcResponseMessage = {
+  def write[B <: A](response: Either[ErrorResponse, B], id: CorrelationId): JsonRpcResponseMessage = {
     val errorOrResult = response match {
       case Left(ErrorResponse(code, message, data)) =>
         Left(
