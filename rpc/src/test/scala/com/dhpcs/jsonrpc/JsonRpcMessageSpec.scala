@@ -15,9 +15,9 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
           |}""".stripMargin
       ),
       JsError(
-        List(
+        Seq(
           (__,
-           List(ValidationError(
+           Seq(ValidationError(
              "not a valid request, request batch, response, response batch or notification message"
            )))))
     )
@@ -35,7 +35,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.invalid")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.invalid")))))
       )
     )
     describe("with version of the wrong type")(
@@ -47,7 +47,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.expected.jsstring")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.expected.jsstring")))))
       )
     )
     describe("without a version")(
@@ -60,7 +60,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with method of the wrong type")(
@@ -74,7 +74,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "method", List(ValidationError("error.expected.jsstring")))))
+        JsError(Seq((__ \ "method", Seq(ValidationError("error.expected.jsstring")))))
       )
     )
     describe("without a method")(
@@ -87,7 +87,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "method", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "method", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with params of the wrong type")(
@@ -101,7 +101,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "params", List(ValidationError("error.expected.jsarray")))))
+        JsError(Seq((__ \ "params", Seq(ValidationError("error.expected.jsarray")))))
       )
     )
     describe("without params") {
@@ -131,7 +131,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(List((__ \ "id", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "id", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with a params array") {
@@ -347,7 +347,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |[
             |]""".stripMargin
         ),
-        JsError(List((__, List(ValidationError("error.invalid")))))
+        JsError(Seq((__, Seq(ValidationError("error.invalid")))))
       )
     )
     describe("with an invalid request")(
@@ -362,7 +362,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  }
             |]""".stripMargin
         ),
-        JsError(List((__(0) \ "method", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__(0) \ "method", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with a single request") {
@@ -406,7 +406,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  }
             |]""".stripMargin
         ),
-        JsError(List((__(0) \ "method", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__(0) \ "method", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with a single notification") {
@@ -452,7 +452,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.invalid")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.invalid")))))
       )
     }
     describe("with version of the wrong type")(
@@ -465,7 +465,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.expected.jsstring")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.expected.jsstring")))))
       )
     )
     describe("without a version")(
@@ -477,7 +477,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with an error of the wrong type")(
@@ -491,9 +491,9 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |}""".stripMargin
         ),
         JsError(
-          List(
-            (__ \ "error" \ "code", List(ValidationError("error.path.missing"))),
-            (__ \ "error" \ "message", List(ValidationError("error.path.missing")))
+          Seq(
+            (__ \ "error" \ "code", Seq(ValidationError("error.path.missing"))),
+            (__ \ "error" \ "message", Seq(ValidationError("error.path.missing")))
           ))
       )
     )
@@ -506,7 +506,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(List((__ \ "error", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "error", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("without an id") {
@@ -518,74 +518,123 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "result":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(List((__ \ "id", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "id", Seq(ValidationError("error.path.missing")))))
       )
     }
-    describe("with an error") {
-      describe("and a null id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-          errorOrResult = Left(JsonRpcResponseError.internalError(None)),
-          id = None
-        )
-        implicit val jsonRpcResponseMessageJson = Json.parse(
-          """
-            |{
-            |  "jsonrpc":"2.0",
-            |  "error":{"code":-32603,"message":"Invalid params","data":{"meaning":"Internal JSON-RPC error."}},
-            |  "id":null
-            |}""".stripMargin
-        )
-        it should behave like read
-        it should behave like write
-      }
-      describe("and a string id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-          errorOrResult = Left(JsonRpcResponseError.internalError(None)),
-          id = Some(Left("one"))
-        )
-        implicit val jsonRpcResponseMessageJson = Json.parse(
-          """
-            |{
-            |  "jsonrpc":"2.0",
-            |  "error":{"code":-32603,"message":"Invalid params","data":{"meaning":"Internal JSON-RPC error."}},
-            |  "id":"one"
-            |}""".stripMargin
-        )
-        it should behave like read
-        it should behave like write
-      }
-      describe("and a numeric id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-          errorOrResult = Left(JsonRpcResponseError.internalError(None)),
-          id = Some(Right(1))
-        )
-        implicit val jsonRpcResponseMessageJson = Json.parse(
-          """
-            |{
-            |  "jsonrpc":"2.0",
-            |  "error":{"code":-32603,"message":"Invalid params","data":{"meaning":"Internal JSON-RPC error."}},
-            |  "id":1
-            |}""".stripMargin
-        )
-        it should behave like read
-        it should behave like write
-        describe("with a fractional part") {
-          implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-            errorOrResult = Left(JsonRpcResponseError.internalError(None)),
-            id = Some(Right(1.1))
-          )
-          implicit val jsonRpcResponseMessageJson = Json.parse(
-            """
-              |{
-              |  "jsonrpc":"2.0",
-              |  "error":{"code":-32603,"message":"Invalid params","data":{"meaning":"Internal JSON-RPC error."}},
-              |  "id":1.1
-              |}""".stripMargin
-          )
-          it should behave like read
-          it should behave like write
-        }
-      }
+    describe("with a parse error") {
+      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
+        errorOrResult = Left(JsonRpcResponseError.parseError(new Throwable("Boom"))),
+        id = Some(Right(1))
+      )
+      implicit val jsonRpcResponseMessageJson = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "error":{"code":-32700,"message":"Parse error","data":{"meaning":"Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.","error":"Boom"}},
+          |  "id":1
+          |}""".stripMargin
+      )
+      it should behave like read
+      it should behave like write
+    }
+    describe("with an invalid request error") {
+      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
+        errorOrResult = Left(
+          JsonRpcResponseError.invalidRequest(
+            errors = Seq((__ \ "method", Seq(ValidationError("error.path.missing")))))),
+        id = Some(Right(1))
+      )
+      implicit val jsonRpcResponseMessageJson = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "error":{"code":-32600,"message":"Invalid Request","data":{"meaning":"The JSON sent is not a valid Request object.","error":{"obj.method":[{"msg":["error.path.missing"],"args":[]}]}}},
+          |  "id":1
+          |}""".stripMargin
+      )
+      it should behave like read
+      it should behave like write
+    }
+    describe("with a method not found error") {
+      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
+        errorOrResult = Left(JsonRpcResponseError.methodNotFound("foo")),
+        id = Some(Right(1))
+      )
+      implicit val jsonRpcResponseMessageJson = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "error":{"code":-32601,"message":"Method not found","data":{"meaning":"The method does not exist / is not available.","error":"The method \"foo\" is not implemented."}},
+          |  "id":1
+          |}""".stripMargin
+      )
+      it should behave like read
+      it should behave like write
+    }
+    describe("with an invalid params error") {
+      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
+        errorOrResult = Left(
+          JsonRpcResponseError.invalidParams(errors = Seq((__ \ "arg1", Seq(ValidationError("error.path.missing")))))),
+        id = Some(Right(1))
+      )
+      implicit val jsonRpcResponseMessageJson = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "error":{"code":-32602,"message":"Invalid params","data":{"meaning":"Invalid method parameter(s).","error":{"obj.arg1":[{"msg":["error.path.missing"],"args":[]}]}}},
+          |  "id":1
+          |}""".stripMargin
+      )
+      it should behave like read
+      it should behave like write
+    }
+    describe("with an internal error") {
+      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
+        errorOrResult = Left(JsonRpcResponseError.internalError()),
+        id = Some(Right(1))
+      )
+      implicit val jsonRpcResponseMessageJson = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "error":{"code":-32603,"message":"Internal error","data":{"meaning":"Internal JSON-RPC error."}},
+          |  "id":1
+          |}""".stripMargin
+      )
+      it should behave like read
+      it should behave like write
+    }
+    describe("with a server error") {
+      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
+        errorOrResult = Left(JsonRpcResponseError.serverError(code = JsonRpcResponseError.ServerErrorCodeFloor)),
+        id = Some(Right(1))
+      )
+      implicit val jsonRpcResponseMessageJson = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "error":{"code":-32099,"message":"Server error","data":{"meaning":"Something went wrong in the receiving application."}},
+          |  "id":1
+          |}""".stripMargin
+      )
+      it should behave like read
+      it should behave like write
+    }
+    describe("with an application error") {
+      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
+        errorOrResult = Left(JsonRpcResponseError.applicationError(code = -31999, message = "Boom")),
+        id = Some(Right(1))
+      )
+      implicit val jsonRpcResponseMessageJson = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "error":{"code":-31999,"message":"Boom"},
+          |  "id":1
+          |}""".stripMargin
+      )
+      it should behave like read
+      it should behave like write
     }
     describe("with a result") {
       describe("and a null id") {
@@ -687,7 +736,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |[
             |]""".stripMargin
         ),
-        JsError(List((__, List(ValidationError("error.invalid")))))
+        JsError(Seq((__, Seq(ValidationError("error.invalid")))))
       )
     )
     describe("with an invalid response")(
@@ -701,7 +750,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  }
             |]""".stripMargin
         ),
-        JsError(List((__(0) \ "error", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__(0) \ "error", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with a single response") {
@@ -745,7 +794,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.invalid")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.invalid")))))
       )
     )
     describe("with version of the wrong type")(
@@ -758,7 +807,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.expected.jsstring")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.expected.jsstring")))))
       )
     )
     describe("without a version")(
@@ -770,7 +819,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(List((__ \ "jsonrpc", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with method of the wrong type")(
@@ -783,7 +832,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(List((__ \ "method", List(ValidationError("error.expected.jsstring")))))
+        JsError(Seq((__ \ "method", Seq(ValidationError("error.expected.jsstring")))))
       )
     )
     describe("without a method")(
@@ -795,7 +844,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(List((__ \ "method", List(ValidationError("error.path.missing")))))
+        JsError(Seq((__ \ "method", Seq(ValidationError("error.path.missing")))))
       )
     )
     describe("with params of the wrong type")(
@@ -808,7 +857,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":"params"
             |}""".stripMargin
         ),
-        JsError(List((__ \ "params", List(ValidationError("error.expected.jsarray")))))
+        JsError(Seq((__ \ "params", Seq(ValidationError("error.expected.jsarray")))))
       )
     )
     describe("without params") {

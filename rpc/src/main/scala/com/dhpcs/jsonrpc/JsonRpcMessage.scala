@@ -212,7 +212,7 @@ object JsonRpcResponseError {
 
   def internalError(error: Option[JsValue] = None): JsonRpcResponseError = rpcError(
     InternalErrorCode,
-    message = "Invalid params",
+    message = "Internal error",
     meaning = "Internal JSON-RPC error.",
     error
   )
@@ -220,9 +220,9 @@ object JsonRpcResponseError {
   def serverError(code: Int, error: Option[JsValue] = None): JsonRpcResponseError = {
     require(code >= ServerErrorCodeFloor && code <= ServerErrorCodeCeiling)
     rpcError(
-      InternalErrorCode,
-      message = "Invalid params",
-      meaning = "Internal JSON-RPC error.",
+      code,
+      message = "Server error",
+      meaning = "Something went wrong in the receiving application.",
       error
     )
   }
@@ -233,9 +233,9 @@ object JsonRpcResponseError {
       message,
       data = Some(
         Json.obj(
-          ("meaning" -> meaning: (String, JsValueWrapper)) ::
-            error.fold[List[(String, JsValueWrapper)]](ifEmpty = Nil)(
-              error => List("error" -> error)
+          ("meaning" -> meaning: (String, JsValueWrapper)) +:
+            error.fold[Seq[(String, JsValueWrapper)]](ifEmpty = Nil)(
+              error => Seq("error" -> error)
             ): _*
         )
       )
