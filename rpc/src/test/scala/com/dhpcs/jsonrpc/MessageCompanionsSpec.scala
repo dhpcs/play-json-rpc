@@ -5,7 +5,6 @@ import com.dhpcs.jsonrpc.JsonRpcMessage.{ArrayParams, CorrelationId, NumericCorr
 import com.dhpcs.jsonrpc.Message.MessageFormats
 import com.dhpcs.jsonrpc.MessageCompanionsSpec._
 import com.dhpcs.jsonrpc.ResponseCompanion.ErrorResponse
-import org.scalatest.OptionValues._
 import org.scalatest._
 import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
@@ -137,7 +136,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           ObjectParams(Json.obj()),
           NumericCorrelationId(1)
         ),
-        None
+        JsError("unknown method invalidMethod")
       )
     )
     describe("of type AddTransactionCommand") {
@@ -148,12 +147,11 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             ArrayParams(Json.arr()),
             NumericCorrelationId(1)
           ),
-          Some(
-            JsError(
-              List(
-                (__, List(ValidationError("command parameters must be named")))
-              )
-            ))
+          JsError(
+            List(
+              (__, List(ValidationError("command parameters must be named")))
+            )
+          )
         )
       )
       describe("with empty params")(
@@ -163,14 +161,13 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             ObjectParams(Json.obj()),
             NumericCorrelationId(1)
           ),
-          Some(
-            JsError(
-              List(
-                (__ \ "from", List(ValidationError("error.path.missing"))),
-                (__ \ "to", List(ValidationError("error.path.missing"))),
-                (__ \ "value", List(ValidationError("error.path.missing")))
-              )
-            ))
+          JsError(
+            List(
+              (__ \ "from", List(ValidationError("error.path.missing"))),
+              (__ \ "to", List(ValidationError("error.path.missing"))),
+              (__ \ "value", List(ValidationError("error.path.missing")))
+            )
+          )
         )
       )
       implicit val addTransactionCommand = AddTransactionCommand(
@@ -247,7 +244,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           method = "invalidMethod",
           ObjectParams(Json.obj())
         ),
-        jsError = None
+        JsError("unknown method invalidMethod")
       )
     )
     describe("of type TransactionAddedNotification") {
@@ -257,12 +254,11 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             method = "transactionAdded",
             ArrayParams(Json.arr())
           ),
-          Some(
-            JsError(
-              List(
-                (__, List(ValidationError("notification parameters must be named")))
-              )
-            ))
+          JsError(
+            List(
+              (__, List(ValidationError("notification parameters must be named")))
+            )
+          )
         )
       )
       describe("with empty params") {
@@ -271,12 +267,11 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             method = "transactionAdded",
             ObjectParams(Json.obj())
           ),
-          Some(
-            JsError(
-              List(
-                (__ \ "transaction", List(ValidationError("error.path.missing")))
-              )
-            ))
+          JsError(
+            List(
+              (__ \ "transaction", List(ValidationError("error.path.missing")))
+            )
+          )
         )
       }
       implicit val clientJoinedZoneNotification = TransactionAddedNotification(
@@ -300,17 +295,15 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
     }
   }
 
-  private[this] def commandReadError(jsonRpcRequestMessage: JsonRpcRequestMessage, jsError: Option[JsError]) =
+  private[this] def commandReadError(jsonRpcRequestMessage: JsonRpcRequestMessage, jsError: JsError) =
     it(s"should fail to decode with error $jsError") {
       val jsResult = Command.read(jsonRpcRequestMessage)
-      jsError.fold(jsResult shouldBe empty)(
-        jsResult.value should equal(_)(after being ordered[Command])
-      )
+      jsResult should equal(jsError)(after being ordered[Command])
     }
 
   private[this] def commandRead(implicit jsonRpcRequestMessage: JsonRpcRequestMessage, command: Command) =
     it(s"should decode to $command")(
-      Command.read(jsonRpcRequestMessage) should be(Some(JsSuccess(command)))
+      Command.read(jsonRpcRequestMessage) should be(JsSuccess(command))
     )
 
   private[this] def commandWrite(implicit command: Command,
@@ -342,19 +335,16 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       Response.write(errorOrResponse, id) should be(jsonRpcResponseMessage)
     )
 
-  private[this] def notificationReadError(jsonRpcNotificationMessage: JsonRpcNotificationMessage,
-                                          jsError: Option[JsError]) =
+  private[this] def notificationReadError(jsonRpcNotificationMessage: JsonRpcNotificationMessage, jsError: JsError) =
     it(s"should fail to decode with error $jsError") {
       val notificationJsResult = Notification.read(jsonRpcNotificationMessage)
-      jsError.fold(notificationJsResult shouldBe empty)(
-        notificationJsResult.value should equal(_)(after being ordered[Notification])
-      )
+      notificationJsResult should equal(jsError)(after being ordered[Notification])
     }
 
   private[this] def notificationRead(implicit jsonRpcNotificationMessage: JsonRpcNotificationMessage,
                                      notification: Notification) =
     it(s"should decode to $notification")(
-      Notification.read(jsonRpcNotificationMessage) should be(Some(JsSuccess(notification)))
+      Notification.read(jsonRpcNotificationMessage) should be(JsSuccess(notification))
     )
 
   private[this] def notificationWrite(implicit notification: Notification,

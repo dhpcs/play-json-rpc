@@ -19,21 +19,19 @@ object JsonRpcMessage {
   sealed abstract class CorrelationId
 
   object CorrelationId {
-    implicit final val CorrelationIdFormat: Format[CorrelationId] =
-      new Format[CorrelationId] {
-        override def reads(json: JsValue): JsResult[CorrelationId] = json match {
-          case JsNull          => JsSuccess(NoCorrelationId)
-          case JsString(value) => JsSuccess(StringCorrelationId(value))
-          case JsNumber(value) => JsSuccess(NumericCorrelationId(value))
-          case _               => JsError()
-        }
-
-        override def writes(correlationId: CorrelationId): JsValue = correlationId match {
-          case NoCorrelationId             => JsNull
-          case StringCorrelationId(value)  => JsString(value)
-          case NumericCorrelationId(value) => JsNumber(value)
-        }
+    implicit final val CorrelationIdFormat: Format[CorrelationId] = Format(
+      Reads {
+        case JsNull          => JsSuccess(NoCorrelationId)
+        case JsString(value) => JsSuccess(StringCorrelationId(value))
+        case JsNumber(value) => JsSuccess(NumericCorrelationId(value))
+        case _               => JsError()
+      },
+      Writes {
+        case NoCorrelationId             => JsNull
+        case StringCorrelationId(value)  => JsString(value)
+        case NumericCorrelationId(value) => JsNumber(value)
       }
+    )
   }
 
   case object NoCorrelationId                        extends CorrelationId
@@ -59,38 +57,30 @@ object JsonRpcMessage {
   }
 
   object SomeParams {
-    implicit final val SomeParamsFormat: Format[SomeParams] =
-      new Format[SomeParams] {
-        override def reads(json: JsValue): JsResult[SomeParams] = json match {
-          case jsArray: JsArray  => JsSuccess(ArrayParams(jsArray))
-          case jsValue: JsObject => JsSuccess(ObjectParams(jsValue))
-          case _                 => JsError(ValidationError(Seq("error.expected.jsarray")))
-        }
-
-        override def writes(someParams: SomeParams): JsValue = someParams match {
-          case ArrayParams(value)  => value
-          case ObjectParams(value) => value
-        }
+    implicit final val SomeParamsFormat: Format[SomeParams] = Format(
+      Reads {
+        case jsArray: JsArray  => JsSuccess(ArrayParams(jsArray))
+        case jsValue: JsObject => JsSuccess(ObjectParams(jsValue))
+        case _                 => JsError(ValidationError(Seq("error.expected.jsarray")))
+      },
+      Writes {
+        case ArrayParams(value)  => value
+        case ObjectParams(value) => value
       }
+    )
   }
 
   case class ArrayParams(value: JsArray)   extends SomeParams
   case class ObjectParams(value: JsObject) extends SomeParams
 
-  implicit final val JsonRpcMessageFormat: Format[JsonRpcMessage] = new Format[JsonRpcMessage] {
-    override def reads(json: JsValue): JsResult[JsonRpcMessage] =
-      (
-        __.read(JsonRpcRequestMessage.JsonRpcRequestMessageFormat).map(m => m: JsonRpcMessage) orElse
-          __.read(JsonRpcRequestMessageBatch.JsonRpcRequestMessageBatchFormat).map(m => m: JsonRpcMessage) orElse
-          __.read(JsonRpcResponseMessage.JsonRpcResponseMessageFormat).map(m => m: JsonRpcMessage) orElse
-          __.read(JsonRpcResponseMessageBatch.JsonRpcResponseMessageBatchFormat).map(m => m: JsonRpcMessage) orElse
-          __.read(JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat).map(m => m: JsonRpcMessage)
-      ).reads(json)
-        .orElse(
-          JsError("not a valid request, request batch, response, response batch or notification message")
-        )
-
-    override def writes(jsonRpcMessage: JsonRpcMessage): JsValue = jsonRpcMessage match {
+  implicit final val JsonRpcMessageFormat: Format[JsonRpcMessage] = Format(
+    __.read(JsonRpcRequestMessage.JsonRpcRequestMessageFormat).map(m => m: JsonRpcMessage) orElse
+      __.read(JsonRpcRequestMessageBatch.JsonRpcRequestMessageBatchFormat).map(m => m: JsonRpcMessage) orElse
+      __.read(JsonRpcResponseMessage.JsonRpcResponseMessageFormat).map(m => m: JsonRpcMessage) orElse
+      __.read(JsonRpcResponseMessageBatch.JsonRpcResponseMessageBatchFormat).map(m => m: JsonRpcMessage) orElse
+      __.read(JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat).map(m => m: JsonRpcMessage) orElse
+      Reads(_ => JsError("not a valid request, request batch, response, response batch or notification message")),
+    Writes {
       case jsonRpcRequestMessage: JsonRpcRequestMessage =>
         Json.toJson(jsonRpcRequestMessage)(JsonRpcRequestMessage.JsonRpcRequestMessageFormat)
       case jsonRpcRequestMessageBatch: JsonRpcRequestMessageBatch =>
@@ -102,7 +92,7 @@ object JsonRpcMessage {
       case jsonRpcNotificationMessage: JsonRpcNotificationMessage =>
         Json.toJson(jsonRpcNotificationMessage)(JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat)
     }
-  }
+  )
 
   def eitherObjectFormat[A: Format, B: Format](leftKey: String, rightKey: String): Format[Either[A, B]] =
     OFormat(
@@ -155,17 +145,14 @@ object JsonRpcRequestMessageBatch {
     eitherValueFormat[JsonRpcNotificationMessage, JsonRpcRequestMessage]
 
   implicit final val JsonRpcRequestMessageBatchFormat: Format[JsonRpcRequestMessageBatch] = Format(
-    Reads(
-      json =>
-        Reads
-          .of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]](verifying(_.nonEmpty))
-          .reads(json)
-          .map(JsonRpcRequestMessageBatch(_))
-    ),
+    Reads
+      .of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]](verifying(_.nonEmpty))
+      .map(JsonRpcRequestMessageBatch(_)),
     Writes(
       a => Writes.of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]].writes(a.messages)
     )
   )
+
 }
 
 case class JsonRpcResponseMessage(errorOrResult: Either[JsonRpcResponseError, JsValue], id: CorrelationId)
@@ -188,10 +175,9 @@ case class JsonRpcResponseMessageBatch(messages: Seq[JsonRpcResponseMessage]) ex
 
 object JsonRpcResponseMessageBatch {
   implicit final val JsonRpcResponseMessageBatchFormat: Format[JsonRpcResponseMessageBatch] = Format(
-    Reads(
-      json =>
-        Reads.of[Seq[JsonRpcResponseMessage]](verifying(_.nonEmpty)).reads(json).map(JsonRpcResponseMessageBatch(_))
-    ),
+    Reads
+      .of[Seq[JsonRpcResponseMessage]](verifying(_.nonEmpty))
+      .map(JsonRpcResponseMessageBatch(_)),
     Writes(
       a => Writes.of[Seq[JsonRpcResponseMessage]].writes(a.messages)
     )

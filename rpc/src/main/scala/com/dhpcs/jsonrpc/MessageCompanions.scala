@@ -13,19 +13,21 @@ trait CommandCompanion[A] {
 
   protected[this] val CommandFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, OWrites[_ <: A])])
 
-  def read(jsonRpcRequestMessage: JsonRpcRequestMessage): Option[JsResult[_ <: A]] =
-    for (reads <- methodReads.get(jsonRpcRequestMessage.method))
-      yield
+  def read(jsonRpcRequestMessage: JsonRpcRequestMessage): JsResult[_ <: A] =
+    methodReads.get(jsonRpcRequestMessage.method) match {
+      case None => JsError(s"unknown method ${jsonRpcRequestMessage.method}")
+      case Some(reads) =>
         jsonRpcRequestMessage.params match {
           case NoParams       => JsError("command parameters must be given")
           case ArrayParams(_) => JsError("command parameters must be named")
           case ObjectParams(value) =>
             reads.reads(value) match {
-              // We just do this to reset the path in the success case.
+              // We do this just to reset the path in the success case.
               case JsError(invalid)    => JsError(invalid)
               case JsSuccess(valid, _) => JsSuccess(valid)
             }
         }
+    }
 
   def write[B <: A](command: B, id: CorrelationId): JsonRpcRequestMessage = {
     val (method, writes) =
@@ -46,7 +48,7 @@ trait ResponseCompanion[A] {
       case Left(error) => JsSuccess(Left(ErrorResponse(error.code, error.message, error.data)))
       case Right(result) =>
         methodReads(method).reads(result).map(Right(_)) match {
-          // We just do this to reset the path in the success case.
+          // We do this just to reset the path in the success case.
           case JsError(invalid)    => JsError(invalid)
           case JsSuccess(valid, _) => JsSuccess(valid)
         }
@@ -80,19 +82,21 @@ trait NotificationCompanion[A] {
 
   protected[this] val NotificationFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, OWrites[_ <: A])])
 
-  def read(jsonRpcNotificationMessage: JsonRpcNotificationMessage): Option[JsResult[_ <: A]] =
-    for (reads <- methodReads.get(jsonRpcNotificationMessage.method))
-      yield
+  def read(jsonRpcNotificationMessage: JsonRpcNotificationMessage): JsResult[_ <: A] =
+    methodReads.get(jsonRpcNotificationMessage.method) match {
+      case None => JsError(s"unknown method ${jsonRpcNotificationMessage.method}")
+      case Some(reads) =>
         jsonRpcNotificationMessage.params match {
           case NoParams       => JsError("command parameters must be given")
           case ArrayParams(_) => JsError("notification parameters must be named")
           case ObjectParams(value) =>
             reads.reads(value) match {
-              // We just do this to reset the path in the success case.
+              // We do this just to reset the path in the success case.
               case JsError(invalid)    => JsError(invalid)
               case JsSuccess(valid, _) => JsSuccess(valid)
             }
         }
+    }
 
   def write[B <: A](notification: B): JsonRpcNotificationMessage = {
     val (method, writes) =
