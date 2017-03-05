@@ -69,9 +69,6 @@ lazy val playJsonTestkit = project
       playJson,
       scalaTest
     ))
-  .settings(
-    coverageEnabled := false
-  )
 
 lazy val playJsonRpc = project
   .in(file("rpc"))
@@ -88,18 +85,6 @@ lazy val playJsonRpc = project
     scalaTest % Test
   ))
 
-lazy val playJsonRpcMarshalling = project
-  .in(file("marshalling"))
-  .settings(commonSettings)
-  .settings(publishSettings)
-  .settings(
-    name := "play-json-rpc-marshalling"
-  )
-  .dependsOn(playJsonRpc)
-  .settings(
-    coverageEnabled := false
-  )
-
 lazy val root = project
   .in(file("."))
   .settings(commonSettings)
@@ -109,6 +94,5 @@ lazy val root = project
   )
   .aggregate(
     playJsonTestkit,
-    playJsonRpc,
-    playJsonRpcMarshalling
+    playJsonRpc
   )
