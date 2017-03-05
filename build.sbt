@@ -24,9 +24,9 @@ lazy val commonSettings = Seq(
     addCommandAlias("validateAggregate", ";coverageAggregate")
 
 lazy val publishSettings = Seq(
-  homepage := Some(url("https://github.com/dhpcs/play-json-rpc/")),
+  homepage := Some(url("https://github.com/dhpcs/scala-json-rpc/")),
   startYear := Some(2015),
-  description := "A Scala library providing implicit play-json Formats for JSON-RPC 2.0 messages",
+  description := "A Scala library providing types and JSON format typeclass instances for JSON-RPC 2.0 messages along with support for marshalling application level commands, responses and notifications via JSON-RPC 2.0.",
   licenses += "Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt"),
   organization := "com.dhpcs",
   organizationHomepage := Some(url("https://www.dhpcs.com/")),
@@ -40,9 +40,9 @@ lazy val publishSettings = Seq(
     )),
   scmInfo := Some(
     ScmInfo(
-      browseUrl = url("https://github.com/dhpcs/play-json-rpc/"),
-      connection = "scm:git:https://github.com/dhpcs/play-json-rpc.git",
-      devConnection = Some("scm:git:git@github.com:dhpcs/play-json-rpc.git")
+      browseUrl = url("https://github.com/dhpcs/scala-json-rpc/"),
+      connection = "scm:git:https://github.com/dhpcs/scala-json-rpc.git",
+      devConnection = Some("scm:git:git@github.com:dhpcs/scala-json-rpc.git")
     )),
   bintrayOrganization := Some("dhpcs"),
   bintrayPackageLabels := Seq("scala", "json-rpc")
@@ -58,7 +58,7 @@ lazy val playJson = "com.typesafe.play" %% "play-json" % "2.5.12"
 lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1"
 
 lazy val playJsonTestkit = project
-  .in(file("testkit"))
+  .in(file("play-json-testkit"))
   .settings(commonSettings)
   .settings(publishSettings)
   .settings(
@@ -70,12 +70,12 @@ lazy val playJsonTestkit = project
       scalaTest
     ))
 
-lazy val playJsonRpc = project
-  .in(file("rpc"))
+lazy val scalaJsonRpc = project
+  .in(file("scala-json-rpc"))
   .settings(commonSettings)
   .settings(publishSettings)
   .settings(
-    name := "play-json-rpc"
+    name := "scala-json-rpc"
   )
   .settings(libraryDependencies ++= Seq(
     playJson
@@ -85,14 +85,24 @@ lazy val playJsonRpc = project
     scalaTest % Test
   ))
 
+lazy val playJsonRpc = project
+  .in(file("play-json-rpc"))
+  .settings(commonSettings)
+  .settings(publishSettings)
+  .settings(
+    name := "play-json-rpc"
+  )
+  .dependsOn(scalaJsonRpc)
+
 lazy val root = project
   .in(file("."))
   .settings(commonSettings)
   .settings(noopPublishSettings)
   .settings(
-    name := "play-json-rpc-root"
+    name := "scala-json-rpc-root"
   )
   .aggregate(
     playJsonTestkit,
+    scalaJsonRpc,
     playJsonRpc
   )

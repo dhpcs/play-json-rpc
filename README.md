@@ -1,10 +1,10 @@
-play-json-rpc
-=============
+scala-json-rpc
+==============
 
-[![Build status](https://travis-ci.org/dhpcs/play-json-rpc.svg?branch=master)](https://travis-ci.org/dhpcs/play-json-rpc)
-[![codecov](https://codecov.io/gh/dhpcs/play-json-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dhpcs/play-json-rpc)
-[![Dependencies](https://app.updateimpact.com/badge/835521161172488192/play-json-rpc-root.svg?config=compile)](https://app.updateimpact.com/latest/835521161172488192/play-json-rpc-root)
-[![Download](https://api.bintray.com/packages/dhpcs/maven/play-json-rpc/images/download.svg)](https://bintray.com/dhpcs/maven/play-json-rpc/_latestVersion)
+[![Build status](https://travis-ci.org/dhpcs/scala-json-rpc.svg?branch=master)](https://travis-ci.org/dhpcs/scala-json-rpc)
+[![codecov](https://codecov.io/gh/dhpcs/scala-json-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dhpcs/scala-json-rpc)
+[![Dependencies](https://app.updateimpact.com/badge/835521161172488192/scala-json-rpc-root.svg?config=compile)](https://app.updateimpact.com/latest/835521161172488192/scala-json-rpc-root)
+[![Download](https://api.bintray.com/packages/dhpcs/maven/scala-json-rpc/images/download.svg)](https://bintray.com/dhpcs/maven/scala-json-rpc/_latestVersion)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A Scala library providing types and JSON format typeclass instances for
@@ -15,7 +15,7 @@ commands, responses and notifications via JSON-RPC 2.0.
 Status
 ------
 
-play-json-rpc is actively maintained and used in multiple production systems. Both the server and client side of
+scala-json-rpc is actively maintained and used in multiple production systems. Both the server and client side of
 [Liquidity](https://play.google.com/store/apps/details?id=com.dhpcs.liquidity) use it. Liquidity is the system that
 originally motivated development.
 
@@ -26,7 +26,7 @@ Resolution and library dependency
 ```scala
 resolvers += Resolver.bintrayRepo("dhpcs", "maven")
 
-libraryDependencies += "com.dhpcs" %% "play-json-rpc" % "1.4.1"
+libraryDependencies += "com.dhpcs" %% "scala-json-rpc" % "1.4.1"
 ```
 
 
@@ -34,22 +34,22 @@ Marshalling application level types
 -----------------------------------
 
 The `CommandCompanion`, `ResponseCompanion` and `NotificationCompanion` bases defined in
-[MessageCompanions.scala](rpc/src/main/scala/com/dhpcs/jsonrpc/MessageCompanions.scala) provide readers and writers
+[MessageCompanions.scala](scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/MessageCompanions.scala) provide readers and writers
 for hierarchies of application level types. Example use can be seen in
-[MessageCompanionsSpec.scala](rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala). 
+[MessageCompanionsSpec.scala](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala). 
 
 
 JSON-RPC message types
 ----------------------
 
 The JSON-RPC message types are represented by an ADT defined in 
-[JsonRpcMessage.scala](rpc/src/main/scala/com/dhpcs/jsonrpc/JsonRpcMessage.scala). The JsonRpcMessage
-[JsonRpcMessageSpec.scala](rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala) shows how they appear when
+[JsonRpcMessage.scala](scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/JsonRpcMessage.scala). The JsonRpcMessage
+[JsonRpcMessageSpec.scala](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala) shows how they appear when
 marshalled to and from JSON.
 
 Note that typical usage does _not_ involve the direct construction of the low level JSON-RPC message types. The
 recommended approach is to make use of the writers provided by the companion bases as demonstrated in the previously
-linked [marshalling specification](rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala).
+linked [marshalling specification](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala).
 
 The companion object for the `JsonRpcMessage` trait provides a play-json Format typeclass instance that can read and
 write "raw" `JsonRpcMessage` types. If you are reading messages received over e.g. a websocket connection and thus
@@ -65,7 +65,7 @@ play-json-testkit
 
 The `JsResultUniformity` and `FormatBehaviors` types in the `com.dhpcs.json` package of the testkit module may be
 useful when writing tests in dependent projects. Example use can be seen in the above linked
-[JsonRpcMessage specification](rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala).
+[JsonRpcMessage specification](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala).
 
 
 ### Testkit resolution and library dependency
@@ -78,4 +78,4 @@ libraryDependencies += "com.dhpcs" %% "play-json-testkit" % "1.4.1" % Test
 License
 -------
 
-play-json-rpc is licensed under the Apache 2 License.
+scala-json-rpc is licensed under the Apache 2 License.
