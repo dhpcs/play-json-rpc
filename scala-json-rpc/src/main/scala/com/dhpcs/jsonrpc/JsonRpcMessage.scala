@@ -276,8 +276,8 @@ object JsonRpcResponseError {
         Json.obj(
           ("meaning" -> meaning: (String, JsValueWrapper)) +:
             error.fold[Seq[(String, JsValueWrapper)]](ifEmpty = Nil)(
-              error => Seq("error" -> error)
-            ): _*
+            error => Seq("error" -> error)
+          ): _*
         )
       )
     ) {}

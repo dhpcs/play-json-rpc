@@ -1,27 +1,27 @@
 lazy val commonSettings = Seq(
-    scalaVersion := "2.11.8",
-    scalacOptions in Compile ++= Seq(
-      "-target:jvm-1.8",
-      "-encoding",
-      "UTF-8",
-      "-deprecation",
-      "-feature",
-      "-unchecked",
-      "-Xfuture",
-      "-Xlint",
-      "-Yno-adapted-args",
-      "-Ywarn-dead-code",
-      "-Ywarn-inaccessible",
-      "-Ywarn-infer-any",
-      "-Ywarn-nullary-override",
-      "-Ywarn-nullary-unit",
-      "-Ywarn-numeric-widen",
-      "-Ywarn-unused",
-      "-Ywarn-unused-import"
-    )
-  ) ++
-    addCommandAlias("validate", ";scalafmtTest; coverage; test; coverageReport") ++
-    addCommandAlias("validateAggregate", ";coverageAggregate")
+  scalaVersion := "2.11.8",
+  scalacOptions in Compile ++= Seq(
+    "-target:jvm-1.8",
+    "-encoding",
+    "UTF-8",
+    "-deprecation",
+    "-feature",
+    "-unchecked",
+    "-Xfuture",
+    "-Xlint",
+    "-Yno-adapted-args",
+    "-Ywarn-dead-code",
+    "-Ywarn-inaccessible",
+    "-Ywarn-infer-any",
+    "-Ywarn-nullary-override",
+    "-Ywarn-nullary-unit",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-unused",
+    "-Ywarn-unused-import"
+  )
+) ++
+  addCommandAlias("validate", ";scalafmtTest; coverage; test; coverageReport") ++
+  addCommandAlias("validateAggregate", ";coverageAggregate")
 
 lazy val publishSettings = Seq(
   homepage := Some(url("https://github.com/dhpcs/scala-json-rpc/")),
