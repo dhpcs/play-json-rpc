@@ -11,6 +11,8 @@ A Scala library providing types and JSON format typeclass instances for
 [JSON-RPC 2.0](http://www.jsonrpc.org/specification) messages along with support for marshalling application level
 commands, responses and notifications via JSON-RPC 2.0.
 
+Note that prior to version 1.5.0 scala-json-rpc was named play-json-rpc.
+
 
 Status
 ------
@@ -18,6 +20,16 @@ Status
 scala-json-rpc is actively maintained and used in multiple production systems. Both the server and client side of
 [Liquidity](https://play.google.com/store/apps/details?id=com.dhpcs.liquidity) use it. Liquidity is the system that
 originally motivated development.
+
+
+Versioning
+----------
+
+All versions greater than 1.0.0 implement the JSON-RPC 2.0 specification.
+
+Patch version increments between versions 1.x.y to 1.5.0 are source compatible with the preceding minor version (e.g.
+1.4.1 is source compatible with 1.4.0). However, minor version increments are not generally source compatible with the
+preceding minor version (i.e. 1.5.0 is not source compatible with 1.4.0).
 
 
 Resolution and library dependency

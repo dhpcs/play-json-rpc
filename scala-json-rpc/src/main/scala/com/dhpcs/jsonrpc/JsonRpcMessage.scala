@@ -1,7 +1,7 @@
 package com.dhpcs.jsonrpc
 
-import com.dhpcs.jsonrpc.JsonRpcMessage._
 import com.dhpcs.jsonrpc.JsonRpcMessage.ParamsOps._
+import com.dhpcs.jsonrpc.JsonRpcMessage._
 import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Json.JsValueWrapper
@@ -38,23 +38,23 @@ object JsonRpcMessage {
   case class StringCorrelationId(value: String)      extends CorrelationId
   case class NumericCorrelationId(value: BigDecimal) extends CorrelationId
 
-  sealed abstract class Params {
-    def unlift: Option[SomeParams]
-  }
+  sealed abstract class Params
 
   object ParamsOps {
-    implicit class RichSomeParamsOpt(value: Option[SomeParams]) extends AnyRef {
+    implicit class RichSomeParamsOpt(val value: Option[SomeParams]) extends AnyVal {
       def lift: Params = value.getOrElse(NoParams)
+    }
+    implicit class RichParams(val value: Params) extends AnyVal {
+      def unlift: Option[SomeParams] = value match {
+        case NoParams          => None
+        case value: SomeParams => Some(value)
+      }
     }
   }
 
-  case object NoParams extends Params {
-    override def unlift: Option[SomeParams] = None
-  }
+  case object NoParams extends Params
 
-  sealed abstract class SomeParams extends Params {
-    override def unlift: Option[SomeParams] = Some(this)
-  }
+  sealed abstract class SomeParams extends Params
 
   object SomeParams {
     implicit final val SomeParamsFormat: Format[SomeParams] = Format(
@@ -100,7 +100,7 @@ object JsonRpcMessage {
         (__ \ leftKey).read[A].map(a => Left(a): Either[A, B]),
       OWrites[Either[A, B]] {
         case Right(rightValue) => Json.obj(rightKey -> Json.toJson(rightValue))
-        case Left(leftValue)   => Json.obj(leftKey  -> Json.toJson[A](leftValue))
+        case Left(leftValue)   => Json.obj(leftKey  -> Json.toJson(leftValue))
       }
     )
 
