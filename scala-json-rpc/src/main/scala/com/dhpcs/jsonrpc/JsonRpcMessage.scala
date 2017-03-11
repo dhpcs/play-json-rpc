@@ -34,9 +34,9 @@ object JsonRpcMessage {
     )
   }
 
-  case object NoCorrelationId                        extends CorrelationId
-  case class StringCorrelationId(value: String)      extends CorrelationId
-  case class NumericCorrelationId(value: BigDecimal) extends CorrelationId
+  case object NoCorrelationId                              extends CorrelationId
+  final case class StringCorrelationId(value: String)      extends CorrelationId
+  final case class NumericCorrelationId(value: BigDecimal) extends CorrelationId
 
   sealed abstract class Params
 
@@ -70,8 +70,8 @@ object JsonRpcMessage {
     )
   }
 
-  case class ArrayParams(value: JsArray)   extends SomeParams
-  case class ObjectParams(value: JsObject) extends SomeParams
+  final case class ArrayParams(value: JsArray)   extends SomeParams
+  final case class ObjectParams(value: JsObject) extends SomeParams
 
   implicit final val JsonRpcMessageFormat: Format[JsonRpcMessage] = Format(
     __.read(JsonRpcRequestMessage.JsonRpcRequestMessageFormat).map(m => m: JsonRpcMessage) orElse
@@ -116,7 +116,7 @@ object JsonRpcMessage {
 
 }
 
-case class JsonRpcRequestMessage(method: String, params: Params, id: CorrelationId) extends JsonRpcMessage
+final case class JsonRpcRequestMessage(method: String, params: Params, id: CorrelationId) extends JsonRpcMessage
 
 object JsonRpcRequestMessage {
   implicit final val JsonRpcRequestMessageFormat: Format[JsonRpcRequestMessage] = (
@@ -134,7 +134,7 @@ object JsonRpcRequestMessage {
   )
 }
 
-case class JsonRpcRequestMessageBatch(messages: Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]])
+final case class JsonRpcRequestMessageBatch(messages: Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]])
     extends JsonRpcMessage {
   require(messages.nonEmpty)
 }
@@ -155,7 +155,7 @@ object JsonRpcRequestMessageBatch {
 
 }
 
-case class JsonRpcResponseMessage(errorOrResult: Either[JsonRpcResponseError, JsValue], id: CorrelationId)
+final case class JsonRpcResponseMessage(errorOrResult: Either[JsonRpcResponseError, JsValue], id: CorrelationId)
     extends JsonRpcMessage
 
 object JsonRpcResponseMessage {
@@ -169,7 +169,7 @@ object JsonRpcResponseMessage {
   )
 }
 
-case class JsonRpcResponseMessageBatch(messages: Seq[JsonRpcResponseMessage]) extends JsonRpcMessage {
+final case class JsonRpcResponseMessageBatch(messages: Seq[JsonRpcResponseMessage]) extends JsonRpcMessage {
   require(messages.nonEmpty)
 }
 
@@ -184,7 +184,7 @@ object JsonRpcResponseMessageBatch {
   )
 }
 
-case class JsonRpcNotificationMessage(method: String, params: Params) extends JsonRpcMessage
+final case class JsonRpcNotificationMessage(method: String, params: Params) extends JsonRpcMessage
 
 object JsonRpcNotificationMessage {
   implicit final val JsonRpcNotificationMessageFormat: Format[JsonRpcNotificationMessage] = (

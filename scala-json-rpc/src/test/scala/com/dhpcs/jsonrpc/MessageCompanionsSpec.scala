@@ -15,13 +15,13 @@ object MessageCompanionsSpec {
 
   sealed abstract class Message
 
-  sealed abstract class Command                     extends Message
-  case class UpdateAccountCommand(account: Account) extends Command
-  case class AddTransactionCommand(from: Int,
-                                   to: Int,
-                                   value: BigDecimal,
-                                   description: Option[String] = None,
-                                   metadata: Option[JsObject] = None)
+  sealed abstract class Command                           extends Message
+  final case class UpdateAccountCommand(account: Account) extends Command
+  final case class AddTransactionCommand(from: Int,
+                                         to: Int,
+                                         value: BigDecimal,
+                                         description: Option[String] = None,
+                                         metadata: Option[JsObject] = None)
       extends Command {
     require(value >= 0)
   }
@@ -58,10 +58,10 @@ object MessageCompanionsSpec {
     )
   }
 
-  sealed abstract class Response                   extends Message
-  sealed abstract class ResultResponse             extends Response
-  case object UpdateAccountResponse                extends ResultResponse
-  case class AddTransactionResponse(created: Long) extends ResultResponse
+  sealed abstract class Response                         extends Message
+  sealed abstract class ResultResponse                   extends Response
+  case object UpdateAccountResponse                      extends ResultResponse
+  final case class AddTransactionResponse(created: Long) extends ResultResponse
 
   object Response extends ResponseCompanion[ResultResponse] {
     override final val ResponseFormats = MessageFormats(
@@ -70,9 +70,9 @@ object MessageCompanionsSpec {
     )
   }
 
-  sealed abstract class Notification                                extends Message
-  case class AccountUpdatedNotification(account: Account)           extends Notification
-  case class TransactionAddedNotification(transaction: Transaction) extends Notification
+  sealed abstract class Notification                                      extends Message
+  final case class AccountUpdatedNotification(account: Account)           extends Notification
+  final case class TransactionAddedNotification(transaction: Transaction) extends Notification
 
   object Notification extends NotificationCompanion[Notification] {
     override final val NotificationFormats = MessageFormats(
@@ -81,18 +81,18 @@ object MessageCompanionsSpec {
     )
   }
 
-  case class Account(id: Int, name: Option[String] = None, metadata: Option[JsObject] = None)
+  final case class Account(id: Int, name: Option[String] = None, metadata: Option[JsObject] = None)
 
   object Account {
     implicit final val AccountFormat: Format[Account] = Json.format[Account]
   }
 
-  case class Transaction(from: Int,
-                         to: Int,
-                         value: BigDecimal,
-                         created: Long,
-                         description: Option[String] = None,
-                         metadata: Option[JsObject] = None) {
+  final case class Transaction(from: Int,
+                               to: Int,
+                               value: BigDecimal,
+                               created: Long,
+                               description: Option[String] = None,
+                               metadata: Option[JsObject] = None) {
     require(value >= 0)
     require(created >= 0)
   }
