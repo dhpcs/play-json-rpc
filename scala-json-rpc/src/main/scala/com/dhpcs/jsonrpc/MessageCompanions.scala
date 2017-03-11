@@ -1,7 +1,6 @@
 package com.dhpcs.jsonrpc
 
-import com.dhpcs.jsonrpc.JsonRpcMessage.{ArrayParams, CorrelationId, NoParams, ObjectParams}
-import com.dhpcs.jsonrpc.ResponseCompanion.ErrorResponse
+import com.dhpcs.jsonrpc.JsonRpcMessage._
 import play.api.libs.json._
 
 import scala.language.existentials
@@ -43,37 +42,19 @@ trait ResponseCompanion[A] {
 
   protected[this] val ResponseFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, OWrites[_ <: A])])
 
-  def read(jsonRpcResponseMessage: JsonRpcResponseMessage, method: String): JsResult[Either[ErrorResponse, _ <: A]] =
-    jsonRpcResponseMessage.errorOrResult match {
-      case Left(error) => JsSuccess(Left(ErrorResponse(error.code, error.message, error.data)))
-      case Right(result) =>
-        methodReads(method).reads(result).map(Right(_)) match {
-          // We do this just to reset the path in the success case.
-          case JsError(invalid)    => JsError(invalid)
-          case JsSuccess(valid, _) => JsSuccess(valid)
-        }
+  def read(jsonRpcResponseSuccessMessage: JsonRpcResponseSuccessMessage, method: String): JsResult[_ <: A] =
+    methodReads(method).reads(jsonRpcResponseSuccessMessage.result) match {
+      // We do this just to reset the path in the success case.
+      case JsError(invalid)    => JsError(invalid)
+      case JsSuccess(valid, _) => JsSuccess(valid)
     }
 
-  def write[B <: A](response: Either[ErrorResponse, B], id: CorrelationId): JsonRpcResponseMessage = {
-    val errorOrResult = response match {
-      case Left(ErrorResponse(code, message, data)) =>
-        Left(
-          JsonRpcResponseError.applicationError(code, message, data)
-        )
-      case Right(resultResponse) =>
-        val (_, writes) =
-          classWrites.getOrElse(resultResponse.getClass, sys.error(s"No format found for ${response.getClass}"))
-        val bWrites = writes.asInstanceOf[OWrites[B]]
-        Right(bWrites.writes(resultResponse))
-    }
-    JsonRpcResponseMessage(errorOrResult, id)
+  def write[B <: A](response: B, id: CorrelationId): JsonRpcResponseSuccessMessage = {
+    val (_, writes) =
+      classWrites.getOrElse(response.getClass, sys.error(s"No format found for ${response.getClass}"))
+    val bWrites = writes.asInstanceOf[OWrites[B]]
+    JsonRpcResponseSuccessMessage(bWrites.writes(response), id)
   }
-}
-
-object ResponseCompanion {
-
-  case class ErrorResponse(code: Int, message: String, data: Option[JsValue] = None)
-
 }
 
 trait NotificationCompanion[A] {

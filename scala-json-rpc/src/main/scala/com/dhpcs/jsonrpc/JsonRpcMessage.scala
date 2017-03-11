@@ -22,9 +22,9 @@ object JsonRpcMessage {
     implicit final val CorrelationIdFormat: Format[CorrelationId] = Format(
       Reads {
         case JsNull          => JsSuccess(NoCorrelationId)
-        case JsString(value) => JsSuccess(StringCorrelationId(value))
         case JsNumber(value) => JsSuccess(NumericCorrelationId(value))
-        case _               => JsError()
+        case JsString(value) => JsSuccess(StringCorrelationId(value))
+        case _               => JsError("error.expected.jsnumberorjsstring")
       },
       Writes {
         case NoCorrelationId             => JsNull
@@ -35,8 +35,8 @@ object JsonRpcMessage {
   }
 
   case object NoCorrelationId                              extends CorrelationId
-  final case class StringCorrelationId(value: String)      extends CorrelationId
   final case class NumericCorrelationId(value: BigDecimal) extends CorrelationId
+  final case class StringCorrelationId(value: String)      extends CorrelationId
 
   sealed abstract class Params
 
@@ -59,19 +59,19 @@ object JsonRpcMessage {
   object SomeParams {
     implicit final val SomeParamsFormat: Format[SomeParams] = Format(
       Reads {
-        case jsArray: JsArray  => JsSuccess(ArrayParams(jsArray))
         case jsValue: JsObject => JsSuccess(ObjectParams(jsValue))
-        case _                 => JsError(ValidationError(Seq("error.expected.jsarray")))
+        case jsArray: JsArray  => JsSuccess(ArrayParams(jsArray))
+        case _                 => JsError(ValidationError(Seq("error.expected.jsobjectorjsarray")))
       },
       Writes {
-        case ArrayParams(value)  => value
         case ObjectParams(value) => value
+        case ArrayParams(value)  => value
       }
     )
   }
 
-  final case class ArrayParams(value: JsArray)   extends SomeParams
   final case class ObjectParams(value: JsObject) extends SomeParams
+  final case class ArrayParams(value: JsArray)   extends SomeParams
 
   implicit final val JsonRpcMessageFormat: Format[JsonRpcMessage] = Format(
     __.read(JsonRpcRequestMessage.JsonRpcRequestMessageFormat).map(m => m: JsonRpcMessage) orElse
@@ -155,18 +155,166 @@ object JsonRpcRequestMessageBatch {
 
 }
 
-final case class JsonRpcResponseMessage(errorOrResult: Either[JsonRpcResponseError, JsValue], id: CorrelationId)
-    extends JsonRpcMessage
+sealed abstract class JsonRpcResponseMessage extends JsonRpcMessage {
+  def id: CorrelationId
+}
 
 object JsonRpcResponseMessage {
-  implicit final val JsonRpcResponseMessageFormat: Format[JsonRpcResponseMessage] = (
+  implicit final val JsonRpcResponseMessageFormat: Format[JsonRpcResponseMessage] = Format(
+    Reads(jsValue =>
+      (__ \ "error")(jsValue) match {
+        case Nil =>
+          jsValue
+            .validate(JsonRpcResponseSuccessMessage.JsonRpcResponseSuccessMessageFormat)
+            .map(m => m: JsonRpcResponseMessage)
+        case _ =>
+          jsValue
+            .validate(JsonRpcResponseErrorMessage.JsonRpcResponseErrorMessageFormat)
+            .map(m => m: JsonRpcResponseMessage)
+    }),
+    Writes {
+      case jsonRpcResponseSuccessMessage: JsonRpcResponseSuccessMessage =>
+        Json.toJson(jsonRpcResponseSuccessMessage)(JsonRpcResponseSuccessMessage.JsonRpcResponseSuccessMessageFormat)
+      case jsonRpcResponseErrorMessage: JsonRpcResponseErrorMessage =>
+        Json.toJson(jsonRpcResponseErrorMessage)(JsonRpcResponseErrorMessage.JsonRpcResponseErrorMessageFormat)
+    }
+  )
+}
+
+final case class JsonRpcResponseSuccessMessage(result: JsValue, id: CorrelationId) extends JsonRpcResponseMessage
+
+object JsonRpcResponseSuccessMessage {
+  implicit final val JsonRpcResponseSuccessMessageFormat: Format[JsonRpcResponseSuccessMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
-      __.format(eitherObjectFormat[JsonRpcResponseError, JsValue]("error", "result")) and
+      (__ \ "result").format[JsValue] and
       (__ \ "id").format[CorrelationId]
   )(
-    (_, errorOrResult, id) => JsonRpcResponseMessage(errorOrResult, id),
-    jsonRpcResponseMessage => (JsonRpcMessage.Version, jsonRpcResponseMessage.errorOrResult, jsonRpcResponseMessage.id)
+    (_, result, id) => JsonRpcResponseSuccessMessage(result, id),
+    jsonRpcResponseSuccessMessage =>
+      (JsonRpcMessage.Version, jsonRpcResponseSuccessMessage.result, jsonRpcResponseSuccessMessage.id)
   )
+}
+
+sealed abstract case class JsonRpcResponseErrorMessage(code: Int,
+                                                       message: String,
+                                                       data: Option[JsValue],
+                                                       id: CorrelationId)
+    extends JsonRpcResponseMessage
+
+object JsonRpcResponseErrorMessage {
+
+  implicit final val JsonRpcResponseErrorMessageFormat: Format[JsonRpcResponseErrorMessage] = (
+    (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
+      (__ \ "error" \ "code").format[Int] and
+      (__ \ "error" \ "message").format[String] and
+      // formatNullable allows the key and value to be completely absent
+      (__ \ "error" \ "data").formatNullable[JsValue] and
+      (__ \ "id").format[CorrelationId]
+  )(
+    (_, code, message, data, id) => new JsonRpcResponseErrorMessage(code, message, data, id) {},
+    jsonRpcResponseErrorMessage =>
+      (JsonRpcMessage.Version,
+       jsonRpcResponseErrorMessage.code,
+       jsonRpcResponseErrorMessage.message,
+       jsonRpcResponseErrorMessage.data,
+       jsonRpcResponseErrorMessage.id)
+  )
+
+  final val ReservedErrorCodeFloor: Int   = -32768
+  final val ReservedErrorCodeCeiling: Int = -32000
+
+  final val ParseErrorCode: Int         = -32700
+  final val InvalidRequestCode: Int     = -32600
+  final val MethodNotFoundCode: Int     = -32601
+  final val InvalidParamsCode: Int      = -32602
+  final val InternalErrorCode: Int      = -32603
+  final val ServerErrorCodeFloor: Int   = -32099
+  final val ServerErrorCodeCeiling: Int = -32000
+
+  def parseError(exception: Throwable, id: CorrelationId): JsonRpcResponseErrorMessage = rpcError(
+    ParseErrorCode,
+    message = "Parse error",
+    meaning = "Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.",
+    error = Some(JsString(exception.getMessage)),
+    id
+  )
+
+  def invalidRequest(error: JsError, id: CorrelationId): JsonRpcResponseErrorMessage =
+    rpcError(
+      InvalidRequestCode,
+      message = "Invalid Request",
+      meaning = "The JSON sent is not a valid Request object.",
+      error = Some(JsError.toJson(error)),
+      id
+    )
+
+  def methodNotFound(method: String, id: CorrelationId): JsonRpcResponseErrorMessage = rpcError(
+    MethodNotFoundCode,
+    message = "Method not found",
+    meaning = "The method does not exist / is not available.",
+    error = Some(JsString(s"""The method "$method" is not implemented.""")),
+    id
+  )
+
+  def invalidParams(error: JsError, id: CorrelationId): JsonRpcResponseErrorMessage =
+    rpcError(
+      InvalidParamsCode,
+      message = "Invalid params",
+      meaning = "Invalid method parameter(s).",
+      error = Some(JsError.toJson(error)),
+      id
+    )
+
+  def internalError(error: Option[JsValue], id: CorrelationId): JsonRpcResponseErrorMessage = rpcError(
+    InternalErrorCode,
+    message = "Internal error",
+    meaning = "Internal JSON-RPC error.",
+    error,
+    id
+  )
+
+  def serverError(code: Int, error: Option[JsValue], id: CorrelationId): JsonRpcResponseErrorMessage = {
+    require(code >= ServerErrorCodeFloor && code <= ServerErrorCodeCeiling)
+    rpcError(
+      code,
+      message = "Server error",
+      meaning = "Something went wrong in the receiving application.",
+      error,
+      id
+    )
+  }
+
+  private def rpcError(code: Int,
+                       message: String,
+                       meaning: String,
+                       error: Option[JsValue],
+                       id: CorrelationId): JsonRpcResponseErrorMessage =
+    new JsonRpcResponseErrorMessage(
+      code,
+      message,
+      data = Some(
+        Json.obj(
+          ("meaning" -> meaning: (String, JsValueWrapper)) +:
+            error.fold[Seq[(String, JsValueWrapper)]](ifEmpty = Nil)(
+            error => Seq("error" -> error)
+          ): _*
+        )
+      ),
+      id
+    ) {}
+
+  def applicationError(code: Int,
+                       message: String,
+                       data: Option[JsValue],
+                       id: CorrelationId): JsonRpcResponseErrorMessage = {
+    require(code > ReservedErrorCodeCeiling || code < ReservedErrorCodeFloor)
+    new JsonRpcResponseErrorMessage(
+      code,
+      message,
+      data,
+      id
+    ) {}
+  }
 }
 
 final case class JsonRpcResponseMessageBatch(messages: Seq[JsonRpcResponseMessage]) extends JsonRpcMessage {
@@ -196,98 +344,4 @@ object JsonRpcNotificationMessage {
     jsonRpcNotificationMessage =>
       (JsonRpcMessage.Version, jsonRpcNotificationMessage.method, jsonRpcNotificationMessage.params.unlift)
   )
-}
-
-sealed abstract case class JsonRpcResponseError(code: Int, message: String, data: Option[JsValue])
-
-object JsonRpcResponseError {
-
-  implicit final val JsonRpcResponseErrorFormat: Format[JsonRpcResponseError] = (
-    (__ \ "code").format[Int] and
-      (__ \ "message").format[String] and
-      // formatNullable allows the key and value to be completely absent
-      (__ \ "data").formatNullable[JsValue]
-  )(
-    (code, message, data) => new JsonRpcResponseError(code, message, data) {},
-    jsonRpcResponseError => (jsonRpcResponseError.code, jsonRpcResponseError.message, jsonRpcResponseError.data)
-  )
-
-  final val ReservedErrorCodeFloor: Int   = -32768
-  final val ReservedErrorCodeCeiling: Int = -32000
-
-  final val ParseErrorCode: Int         = -32700
-  final val InvalidRequestCode: Int     = -32600
-  final val MethodNotFoundCode: Int     = -32601
-  final val InvalidParamsCode: Int      = -32602
-  final val InternalErrorCode: Int      = -32603
-  final val ServerErrorCodeFloor: Int   = -32099
-  final val ServerErrorCodeCeiling: Int = -32000
-
-  def parseError(exception: Throwable): JsonRpcResponseError = rpcError(
-    ParseErrorCode,
-    message = "Parse error",
-    meaning = "Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.",
-    error = Some(JsString(exception.getMessage))
-  )
-
-  def invalidRequest(errors: Seq[(JsPath, Seq[ValidationError])]): JsonRpcResponseError = rpcError(
-    InvalidRequestCode,
-    message = "Invalid Request",
-    meaning = "The JSON sent is not a valid Request object.",
-    error = Some(JsError.toJson(errors))
-  )
-
-  def methodNotFound(method: String): JsonRpcResponseError = rpcError(
-    MethodNotFoundCode,
-    message = "Method not found",
-    meaning = "The method does not exist / is not available.",
-    error = Some(JsString(s"""The method "$method" is not implemented."""))
-  )
-
-  def invalidParams(errors: Seq[(JsPath, Seq[ValidationError])]): JsonRpcResponseError = rpcError(
-    InvalidParamsCode,
-    message = "Invalid params",
-    meaning = "Invalid method parameter(s).",
-    error = Some(JsError.toJson(errors))
-  )
-
-  def internalError(error: Option[JsValue] = None): JsonRpcResponseError = rpcError(
-    InternalErrorCode,
-    message = "Internal error",
-    meaning = "Internal JSON-RPC error.",
-    error
-  )
-
-  def serverError(code: Int, error: Option[JsValue] = None): JsonRpcResponseError = {
-    require(code >= ServerErrorCodeFloor && code <= ServerErrorCodeCeiling)
-    rpcError(
-      code,
-      message = "Server error",
-      meaning = "Something went wrong in the receiving application.",
-      error
-    )
-  }
-
-  private def rpcError(code: Int, message: String, meaning: String, error: Option[JsValue]): JsonRpcResponseError =
-    new JsonRpcResponseError(
-      code,
-      message,
-      data = Some(
-        Json.obj(
-          ("meaning" -> meaning: (String, JsValueWrapper)) +:
-            error.fold[Seq[(String, JsValueWrapper)]](ifEmpty = Nil)(
-            error => Seq("error" -> error)
-          ): _*
-        )
-      )
-    ) {}
-
-  def applicationError(code: Int, message: String, data: Option[JsValue] = None): JsonRpcResponseError = {
-    require(code > ReservedErrorCodeCeiling || code < ReservedErrorCodeFloor)
-    new JsonRpcResponseError(
-      code,
-      message,
-      data
-    ) {}
-  }
 }

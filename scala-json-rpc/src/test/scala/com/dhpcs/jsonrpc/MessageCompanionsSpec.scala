@@ -1,10 +1,9 @@
 package com.dhpcs.jsonrpc
 
 import com.dhpcs.json.JsResultUniformity
-import com.dhpcs.jsonrpc.JsonRpcMessage.{ArrayParams, CorrelationId, NumericCorrelationId, ObjectParams}
+import com.dhpcs.jsonrpc.JsonRpcMessage._
 import com.dhpcs.jsonrpc.Message.MessageFormats
 import com.dhpcs.jsonrpc.MessageCompanionsSpec._
-import com.dhpcs.jsonrpc.ResponseCompanion.ErrorResponse
 import org.scalatest._
 import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
@@ -147,11 +146,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             ArrayParams(Json.arr()),
             NumericCorrelationId(1)
           ),
-          JsError(
-            List(
-              (__, List(ValidationError("command parameters must be named")))
-            )
-          )
+          JsError(__, "command parameters must be named")
         )
       )
       describe("with empty params")(
@@ -162,10 +157,10 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             NumericCorrelationId(1)
           ),
           JsError(
-            List(
-              (__ \ "from", List(ValidationError("error.path.missing"))),
-              (__ \ "to", List(ValidationError("error.path.missing"))),
-              (__ \ "value", List(ValidationError("error.path.missing")))
+            Seq(
+              (__ \ "from", Seq(ValidationError("error.path.missing"))),
+              (__ \ "to", Seq(ValidationError("error.path.missing"))),
+              (__ \ "value", Seq(ValidationError("error.path.missing")))
             )
           )
         )
@@ -202,40 +197,23 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
     }
   }
 
-  describe("A Response") {
-    describe("of type AddTransactionResponse")(
-      describe("with empty params")(
-        it should behave like responseReadError(
-          JsonRpcResponseMessage(
-            errorOrResult = Right(Json.obj()),
-            NumericCorrelationId(1)
-          ),
-          "addTransaction",
-          JsError(
-            List(
-              (__ \ "created", List(ValidationError("error.path.missing")))
-            )
-          )
-        )
-      )
-    )
-    implicit val addTransactionResponse = Right(
-      AddTransactionResponse(
+  describe("A Response")(
+    describe("of type AddTransactionResponse") {
+      implicit val addTransactionResponse = AddTransactionResponse(
         created = 1434115187612L
-      ))
-    implicit val id = NumericCorrelationId(1)
-    implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-      Right(
+      )
+      implicit val id = NumericCorrelationId(1)
+      implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
         Json.obj(
           "created" -> 1434115187612L
-        )
-      ),
-      NumericCorrelationId(1)
-    )
-    implicit val method = "addTransaction"
-    it should behave like responseRead
-    it should behave like responseWrite
-  }
+        ),
+        NumericCorrelationId(1)
+      )
+      implicit val method = "addTransaction"
+      it should behave like responseRead
+      it should behave like responseWrite
+    }
+  )
 
   describe("A Notification") {
     describe("with an invalid method")(
@@ -254,11 +232,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             method = "transactionAdded",
             ArrayParams(Json.arr())
           ),
-          JsError(
-            List(
-              (__, List(ValidationError("notification parameters must be named")))
-            )
-          )
+          JsError(__, "notification parameters must be named")
         )
       )
       describe("with empty params") {
@@ -267,11 +241,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
             method = "transactionAdded",
             ObjectParams(Json.obj())
           ),
-          JsError(
-            List(
-              (__ \ "transaction", List(ValidationError("error.path.missing")))
-            )
-          )
+          JsError(__ \ "transaction", "error.path.missing")
         )
       }
       implicit val clientJoinedZoneNotification = TransactionAddedNotification(
@@ -313,26 +283,18 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       Command.write(command, id) should be(jsonRpcRequestMessage)
     )
 
-  private[this] def responseReadError(jsonRpcResponseMessage: JsonRpcResponseMessage,
-                                      method: String,
-                                      jsError: JsError) =
-    it(s"should fail to decode with error $jsError")(
-      (Response.read(jsonRpcResponseMessage, method)
-        should equal(jsError))(after being ordered[Either[ErrorResponse, ResultResponse]])
-    )
-
-  private[this] def responseRead(implicit jsonRpcResponseMessage: JsonRpcResponseMessage,
+  private[this] def responseRead(implicit jsonRpcResponseMessage: JsonRpcResponseSuccessMessage,
                                  method: String,
-                                 errorOrResponse: Either[ErrorResponse, ResultResponse]) =
-    it(s"should decode to $errorOrResponse")(
-      Response.read(jsonRpcResponseMessage, method) should be(JsSuccess(errorOrResponse))
+                                 response: ResultResponse) =
+    it(s"should decode to $response")(
+      Response.read(jsonRpcResponseMessage, method) should be(JsSuccess(response))
     )
 
-  private[this] def responseWrite(implicit errorOrResponse: Either[ErrorResponse, ResultResponse],
+  private[this] def responseWrite(implicit response: ResultResponse,
                                   id: CorrelationId,
-                                  jsonRpcResponseMessage: JsonRpcResponseMessage) =
+                                  jsonRpcResponseMessage: JsonRpcResponseSuccessMessage) =
     it(s"should encode to $jsonRpcResponseMessage")(
-      Response.write(errorOrResponse, id) should be(jsonRpcResponseMessage)
+      Response.write(response, id) should be(jsonRpcResponseMessage)
     )
 
   private[this] def notificationReadError(jsonRpcNotificationMessage: JsonRpcNotificationMessage, jsError: JsError) =

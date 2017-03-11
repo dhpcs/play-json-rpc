@@ -1,14 +1,7 @@
 package com.dhpcs.jsonrpc
 
 import com.dhpcs.json.FormatBehaviors
-import com.dhpcs.jsonrpc.JsonRpcMessage.{
-  ArrayParams,
-  NoCorrelationId,
-  NoParams,
-  NumericCorrelationId,
-  ObjectParams,
-  StringCorrelationId
-}
+import com.dhpcs.jsonrpc.JsonRpcMessage._
 import org.scalatest.{FunSpec, Matchers}
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
@@ -22,12 +15,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
           |{
           |}""".stripMargin
       ),
-      JsError(
-        Seq(
-          (__,
-           Seq(ValidationError(
-             "not a valid request, request batch, response, response batch or notification message"
-           )))))
+      JsError("not a valid request, request batch, response, response batch or notification message")
     )
   )
 
@@ -43,7 +31,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.invalid")))))
+        JsError(__ \ "jsonrpc", "error.invalid")
       )
     )
     describe("with version of the wrong type")(
@@ -55,7 +43,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.expected.jsstring")))))
+        JsError(__ \ "jsonrpc", "error.expected.jsstring")
       )
     )
     describe("without a version")(
@@ -68,7 +56,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "jsonrpc", "error.path.missing")
       )
     )
     describe("with method of the wrong type")(
@@ -82,7 +70,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "method", Seq(ValidationError("error.expected.jsstring")))))
+        JsError(__ \ "method", "error.expected.jsstring")
       )
     )
     describe("without a method")(
@@ -95,7 +83,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "method", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "method", "error.path.missing")
       )
     )
     describe("with params of the wrong type")(
@@ -109,7 +97,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "params", Seq(ValidationError("error.expected.jsarray")))))
+        JsError(__ \ "params", "error.expected.jsobjectorjsarray")
       )
     )
     describe("without params") {
@@ -139,7 +127,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "id", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "id", "error.path.missing")
       )
     )
     describe("with a params array") {
@@ -333,7 +321,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |[
             |]""".stripMargin
         ),
-        JsError(Seq((__, Seq(ValidationError("error.invalid")))))
+        JsError(__, "error.invalid")
       )
     )
     describe("with an invalid request")(
@@ -348,7 +336,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  }
             |]""".stripMargin
         ),
-        JsError(Seq((__(0) \ "method", Seq(ValidationError("error.path.missing")))))
+        JsError(__(0) \ "method", "error.path.missing")
       )
     )
     describe("with a single request") {
@@ -390,7 +378,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  }
             |]""".stripMargin
         ),
-        JsError(Seq((__(0) \ "method", Seq(ValidationError("error.path.missing")))))
+        JsError(__(0) \ "method", "error.path.missing")
       )
     )
     describe("with a single notification") {
@@ -433,7 +421,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.invalid")))))
+        JsError(__ \ "jsonrpc", "error.invalid")
       )
     }
     describe("with version of the wrong type")(
@@ -446,7 +434,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.expected.jsstring")))))
+        JsError(__ \ "jsonrpc", "error.expected.jsstring")
       )
     )
     describe("without a version")(
@@ -458,7 +446,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "jsonrpc", "error.path.missing")
       )
     )
     describe("with an error of the wrong type")(
@@ -487,7 +475,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "id":0
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "error", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "result", "error.path.missing")
       )
     )
     describe("without an id") {
@@ -499,12 +487,12 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "result":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "id", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "id", "error.path.missing")
       )
     }
     describe("with a parse error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-        errorOrResult = Left(JsonRpcResponseError.parseError(new Throwable("Boom"))),
+      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.parseError(
+        new Throwable("Boom"),
         NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -519,10 +507,8 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       it should behave like write
     }
     describe("with an invalid request error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-        errorOrResult = Left(
-          JsonRpcResponseError.invalidRequest(
-            errors = Seq((__ \ "method", Seq(ValidationError("error.path.missing")))))),
+      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.invalidRequest(
+        error = JsError(__ \ "method", "error.path.missing"),
         NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -537,8 +523,8 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       it should behave like write
     }
     describe("with a method not found error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-        errorOrResult = Left(JsonRpcResponseError.methodNotFound("foo")),
+      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.methodNotFound(
+        "foo",
         NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -553,9 +539,8 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       it should behave like write
     }
     describe("with an invalid params error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-        errorOrResult = Left(
-          JsonRpcResponseError.invalidParams(errors = Seq((__ \ "arg1", Seq(ValidationError("error.path.missing")))))),
+      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.invalidParams(
+        error = JsError(__ \ "arg1", "error.path.missing"),
         NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -570,8 +555,8 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       it should behave like write
     }
     describe("with an internal error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-        errorOrResult = Left(JsonRpcResponseError.internalError()),
+      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.internalError(
+        error = None,
         NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -586,8 +571,9 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       it should behave like write
     }
     describe("with a server error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-        errorOrResult = Left(JsonRpcResponseError.serverError(code = JsonRpcResponseError.ServerErrorCodeFloor)),
+      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.serverError(
+        code = JsonRpcResponseErrorMessage.ServerErrorCodeFloor,
+        error = None,
         NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -602,8 +588,10 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       it should behave like write
     }
     describe("with an application error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-        errorOrResult = Left(JsonRpcResponseError.applicationError(code = -31999, message = "Boom")),
+      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.applicationError(
+        code = -31999,
+        message = "Boom",
+        data = None,
         NumericCorrelationId(1)
       )
       implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -619,14 +607,13 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
     }
     describe("with a result") {
       describe("and a null id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-          errorOrResult = Right(
-            JsObject(
-              Seq(
-                "param1" -> JsString("param1"),
-                "param2" -> JsString("param2")
-              )
-            )),
+        implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+          JsObject(
+            Seq(
+              "param1" -> JsString("param1"),
+              "param2" -> JsString("param2")
+            )
+          ),
           NoCorrelationId
         )
         implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -641,14 +628,13 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         it should behave like write
       }
       describe("and a string id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-          errorOrResult = Right(
-            JsObject(
-              Seq(
-                "param1" -> JsString("param1"),
-                "param2" -> JsString("param2")
-              )
-            )),
+        implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+          JsObject(
+            Seq(
+              "param1" -> JsString("param1"),
+              "param2" -> JsString("param2")
+            )
+          ),
           StringCorrelationId("one")
         )
         implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -663,14 +649,13 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         it should behave like write
       }
       describe("and a numeric id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-          errorOrResult = Right(
-            JsObject(
-              Seq(
-                "param1" -> JsString("param1"),
-                "param2" -> JsString("param2")
-              )
-            )),
+        implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+          JsObject(
+            Seq(
+              "param1" -> JsString("param1"),
+              "param2" -> JsString("param2")
+            )
+          ),
           NumericCorrelationId(1)
         )
         implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -684,14 +669,13 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         it should behave like read
         it should behave like write
         describe("with a fractional part") {
-          implicit val jsonRpcResponseMessage = JsonRpcResponseMessage(
-            errorOrResult = Right(
-              JsObject(
-                Seq(
-                  "param1" -> JsString("param1"),
-                  "param2" -> JsString("param2")
-                )
-              )),
+          implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+            JsObject(
+              Seq(
+                "param1" -> JsString("param1"),
+                "param2" -> JsString("param2")
+              )
+            ),
             NumericCorrelationId(1.1)
           )
           implicit val jsonRpcResponseMessageJson = Json.parse(
@@ -717,7 +701,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |[
             |]""".stripMargin
         ),
-        JsError(Seq((__, Seq(ValidationError("error.invalid")))))
+        JsError(__, "error.invalid")
       )
     )
     describe("with an invalid response")(
@@ -731,20 +715,19 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  }
             |]""".stripMargin
         ),
-        JsError(Seq((__(0) \ "error", Seq(ValidationError("error.path.missing")))))
+        JsError(__(0) \ "result", "error.path.missing")
       )
     )
     describe("with a single response") {
       implicit val jsonRpcResponseMessageBatch = JsonRpcResponseMessageBatch(
         Seq(
-          JsonRpcResponseMessage(
-            errorOrResult = Right(
-              JsObject(
-                Seq(
-                  "param1" -> JsString("param1"),
-                  "param2" -> JsString("param2")
-                )
-              )),
+          JsonRpcResponseSuccessMessage(
+            JsObject(
+              Seq(
+                "param1" -> JsString("param1"),
+                "param2" -> JsString("param2")
+              )
+            ),
             NumericCorrelationId(1)
           )
         )
@@ -775,7 +758,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.invalid")))))
+        JsError(__ \ "jsonrpc", "error.invalid")
       )
     )
     describe("with version of the wrong type")(
@@ -788,7 +771,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.expected.jsstring")))))
+        JsError(__ \ "jsonrpc", "error.expected.jsstring")
       )
     )
     describe("without a version")(
@@ -800,7 +783,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "jsonrpc", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "jsonrpc", "error.path.missing")
       )
     )
     describe("with method of the wrong type")(
@@ -813,7 +796,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "method", Seq(ValidationError("error.expected.jsstring")))))
+        JsError(__ \ "method", "error.expected.jsstring")
       )
     )
     describe("without a method")(
@@ -825,7 +808,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "method", Seq(ValidationError("error.path.missing")))))
+        JsError(__ \ "method", "error.path.missing")
       )
     )
     describe("with params of the wrong type")(
@@ -838,7 +821,7 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
             |  "params":"params"
             |}""".stripMargin
         ),
-        JsError(Seq((__ \ "params", Seq(ValidationError("error.expected.jsarray")))))
+        JsError(__ \ "params", "error.expected.jsobjectorjsarray")
       )
     )
     describe("without params") {
