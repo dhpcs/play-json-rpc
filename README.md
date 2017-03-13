@@ -46,8 +46,8 @@ Marshalling application level types
 -----------------------------------
 
 The `CommandCompanion`, `ResponseCompanion` and `NotificationCompanion` bases defined in
-[MessageCompanions.scala](scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/MessageCompanions.scala) provide readers and writers
-for hierarchies of application level types. Example use can be seen in
+[MessageCompanions.scala](../v1.5.0/scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/MessageCompanions.scala) provide
+readers and writers for hierarchies of application level types. Example use can be seen in
 [MessageCompanionsSpec.scala](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala). 
 
 
@@ -55,13 +55,15 @@ JSON-RPC message types
 ----------------------
 
 The JSON-RPC message types are represented by an ADT defined in 
-[JsonRpcMessage.scala](scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/JsonRpcMessage.scala). The JsonRpcMessage
-[JsonRpcMessageSpec.scala](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala) shows how they appear when
-marshalled to and from JSON.
+[JsonRpcMessage.scala](../v1.5.0/scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/JsonRpcMessage.scala). The
+JsonRpcMessage
+[JsonRpcMessageSpec.scala](../v1.5.0/scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala) shows
+how they appear when marshalled to and from JSON.
 
 Note that typical usage does _not_ involve the direct construction of the low level JSON-RPC message types. The
 recommended approach is to make use of the writers provided by the companion bases as demonstrated in the previously
-linked [marshalling specification](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala).
+linked
+[marshalling specification](../v1.5.0/scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala).
 
 The companion object for the `JsonRpcMessage` trait provides a play-json Format typeclass instance that can read and
 write "raw" `JsonRpcMessage` types. If you are reading messages received over e.g. a websocket connection and thus
@@ -77,7 +79,7 @@ play-json-testkit
 
 The `JsResultUniformity` and `FormatBehaviors` types in the `com.dhpcs.json` package of the testkit module may be
 useful when writing tests in dependent projects. Example use can be seen in the above linked
-[JsonRpcMessage specification](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala).
+[JsonRpcMessage specification](../v1.5.0/scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala).
 
 
 ### Testkit resolution and library dependency
