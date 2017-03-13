@@ -1,5 +1,5 @@
 lazy val commonSettings = Seq(
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.1",
   scalacOptions in Compile ++= Seq(
     "-target:jvm-1.8",
     "-encoding",
@@ -53,7 +53,7 @@ lazy val noopPublishSettings = Seq(
   publishLocal := {}
 )
 
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.5.13"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.6.0-M5"
 
 lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1"
 

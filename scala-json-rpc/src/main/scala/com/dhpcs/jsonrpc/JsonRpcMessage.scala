@@ -2,7 +2,6 @@ package com.dhpcs.jsonrpc
 
 import com.dhpcs.jsonrpc.JsonRpcMessage.ParamsOps._
 import com.dhpcs.jsonrpc.JsonRpcMessage._
-import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.Reads.verifying
@@ -61,7 +60,7 @@ object JsonRpcMessage {
       Reads {
         case jsValue: JsObject => JsSuccess(ObjectParams(jsValue))
         case jsArray: JsArray  => JsSuccess(ArrayParams(jsArray))
-        case _                 => JsError(ValidationError(Seq("error.expected.jsobjectorjsarray")))
+        case _                 => JsError(JsonValidationError(Seq("error.expected.jsobjectorjsarray")))
       },
       Writes {
         case ObjectParams(value) => value

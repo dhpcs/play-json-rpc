@@ -5,7 +5,6 @@ import com.dhpcs.jsonrpc.JsonRpcMessage._
 import com.dhpcs.jsonrpc.Message.MessageFormats
 import com.dhpcs.jsonrpc.MessageCompanionsSpec._
 import org.scalatest._
-import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads.min
 import play.api.libs.json._
@@ -158,9 +157,9 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           ),
           JsError(
             Seq(
-              (__ \ "from", Seq(ValidationError("error.path.missing"))),
-              (__ \ "to", Seq(ValidationError("error.path.missing"))),
-              (__ \ "value", Seq(ValidationError("error.path.missing")))
+              (__ \ "from", Seq(JsonValidationError("error.path.missing"))),
+              (__ \ "to", Seq(JsonValidationError("error.path.missing"))),
+              (__ \ "value", Seq(JsonValidationError("error.path.missing")))
             )
           )
         )

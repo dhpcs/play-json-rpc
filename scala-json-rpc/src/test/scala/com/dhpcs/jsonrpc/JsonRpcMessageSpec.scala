@@ -3,7 +3,6 @@ package com.dhpcs.jsonrpc
 import com.dhpcs.json.FormatBehaviors
 import com.dhpcs.jsonrpc.JsonRpcMessage._
 import org.scalatest.{FunSpec, Matchers}
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 
 class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] with Matchers {
@@ -449,8 +448,8 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
         ),
         JsError(
           Seq(
-            (__ \ "error" \ "code", Seq(ValidationError("error.path.missing"))),
-            (__ \ "error" \ "message", Seq(ValidationError("error.path.missing")))
+            (__ \ "error" \ "code", Seq(JsonValidationError("error.path.missing"))),
+            (__ \ "error" \ "message", Seq(JsonValidationError("error.path.missing")))
           ))
       )
     )
