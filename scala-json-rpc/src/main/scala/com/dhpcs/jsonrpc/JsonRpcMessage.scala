@@ -154,9 +154,9 @@ object JsonRpcRequestMessageBatch {
     Reads
       .of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]](verifying(_.nonEmpty))
       .map(JsonRpcRequestMessageBatch(_)),
-    Writes(
-      a => Writes.of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]].writes(a.messages)
-    )
+    Writes
+      .of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]]
+      .contramap(_.messages)
   )
 
 }
@@ -332,9 +332,9 @@ object JsonRpcResponseMessageBatch {
     Reads
       .of[Seq[JsonRpcResponseMessage]](verifying(_.nonEmpty))
       .map(JsonRpcResponseMessageBatch(_)),
-    Writes(
-      a => Writes.of[Seq[JsonRpcResponseMessage]].writes(a.messages)
-    )
+    Writes
+      .of[Seq[JsonRpcResponseMessage]]
+      .contramap(_.messages)
   )
 }
 
