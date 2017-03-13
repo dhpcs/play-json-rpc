@@ -132,7 +132,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       it should behave like commandReadError(
         JsonRpcRequestMessage(
           method = "invalidMethod",
-          ObjectParams(Json.obj()),
+          Json.obj(),
           NumericCorrelationId(1)
         ),
         JsError("unknown method invalidMethod")
@@ -143,7 +143,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like commandReadError(
           JsonRpcRequestMessage(
             method = "addTransaction",
-            ArrayParams(Json.arr()),
+            Json.arr(),
             NumericCorrelationId(1)
           ),
           JsError(__, "command parameters must be named")
@@ -153,7 +153,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like commandReadError(
           JsonRpcRequestMessage(
             method = "addTransaction",
-            ObjectParams(Json.obj()),
+            Json.obj(),
             NumericCorrelationId(1)
           ),
           JsError(
@@ -179,15 +179,13 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       implicit val id = NumericCorrelationId(1)
       implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
         "addTransaction",
-        ObjectParams(
-          Json.obj(
-            "from"        -> 0,
-            "to"          -> 1,
-            "value"       -> BigDecimal(1000000),
-            "description" -> "Property purchase",
-            "metadata" -> Json.obj(
-              "property" -> "The TARDIS"
-            )
+        Json.obj(
+          "from"        -> 0,
+          "to"          -> 1,
+          "value"       -> BigDecimal(1000000),
+          "description" -> "Property purchase",
+          "metadata" -> Json.obj(
+            "property" -> "The TARDIS"
           )
         ),
         NumericCorrelationId(1)
@@ -220,7 +218,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       it should behave like notificationReadError(
         JsonRpcNotificationMessage(
           method = "invalidMethod",
-          ObjectParams(Json.obj())
+          Json.obj()
         ),
         JsError("unknown method invalidMethod")
       )
@@ -230,7 +228,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like notificationReadError(
           JsonRpcNotificationMessage(
             method = "transactionAdded",
-            ArrayParams(Json.arr())
+            Json.arr()
           ),
           JsError(__, "notification parameters must be named")
         )
@@ -239,7 +237,7 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         it should behave like notificationReadError(
           JsonRpcNotificationMessage(
             method = "transactionAdded",
-            ObjectParams(Json.obj())
+            Json.obj()
           ),
           JsError(__ \ "transaction", "error.path.missing")
         )
@@ -254,10 +252,8 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
       )
       implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "transactionAdded",
-        params = ObjectParams(
-          Json.obj(
-            "transaction" -> Json.parse("""{"from":0,"to":1,"value":1000000,"created":1434115187612}""")
-          )
+        params = Json.obj(
+          "transaction" -> Json.parse("""{"from":0,"to":1,"value":1000000,"created":1434115187612}""")
         )
       )
       it should behave like notificationRead

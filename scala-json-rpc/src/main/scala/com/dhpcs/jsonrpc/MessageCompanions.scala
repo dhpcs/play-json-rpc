@@ -32,7 +32,7 @@ trait CommandCompanion[A] {
     val (method, writes) =
       classWrites.getOrElse(command.getClass, sys.error(s"No format found for ${command.getClass}"))
     val bWrites = writes.asInstanceOf[OWrites[B]]
-    JsonRpcRequestMessage(method, ObjectParams(bWrites.writes(command)), id)
+    JsonRpcRequestMessage(method, bWrites.writes(command), id)
   }
 }
 
@@ -83,7 +83,7 @@ trait NotificationCompanion[A] {
     val (method, writes) =
       classWrites.getOrElse(notification.getClass, sys.error(s"No format found for ${notification.getClass}"))
     val bWrites = writes.asInstanceOf[OWrites[B]]
-    JsonRpcNotificationMessage(method, ObjectParams(bWrites.writes(notification)))
+    JsonRpcNotificationMessage(method, bWrites.writes(notification))
   }
 }
 

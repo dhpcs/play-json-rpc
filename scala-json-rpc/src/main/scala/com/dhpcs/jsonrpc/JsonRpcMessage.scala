@@ -119,6 +119,13 @@ object JsonRpcMessage {
 final case class JsonRpcRequestMessage(method: String, params: Params, id: CorrelationId) extends JsonRpcMessage
 
 object JsonRpcRequestMessage {
+
+  def apply(method: String, params: JsObject, id: CorrelationId): JsonRpcRequestMessage =
+    JsonRpcRequestMessage(method, ObjectParams(params), id)
+
+  def apply(method: String, params: JsArray, id: CorrelationId): JsonRpcRequestMessage =
+    JsonRpcRequestMessage(method, ArrayParams(params), id)
+
   implicit final val JsonRpcRequestMessageFormat: Format[JsonRpcRequestMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
@@ -335,6 +342,13 @@ object JsonRpcResponseMessageBatch {
 final case class JsonRpcNotificationMessage(method: String, params: Params) extends JsonRpcMessage
 
 object JsonRpcNotificationMessage {
+
+  def apply(method: String, params: JsObject): JsonRpcNotificationMessage =
+    JsonRpcNotificationMessage(method, ObjectParams(params))
+
+  def apply(method: String, params: JsArray): JsonRpcNotificationMessage =
+    JsonRpcNotificationMessage(method, ArrayParams(params))
+
   implicit final val JsonRpcNotificationMessageFormat: Format[JsonRpcNotificationMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
