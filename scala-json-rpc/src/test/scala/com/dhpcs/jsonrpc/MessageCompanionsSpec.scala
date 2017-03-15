@@ -1,6 +1,5 @@
 package com.dhpcs.jsonrpc
 
-import com.dhpcs.json.JsResultUniformity
 import com.dhpcs.jsonrpc.JsonRpcMessage._
 import com.dhpcs.jsonrpc.Message.MessageFormats
 import com.dhpcs.jsonrpc.MessageCompanionsSpec._
@@ -57,11 +56,10 @@ object MessageCompanionsSpec {
   }
 
   sealed abstract class Response                         extends Message
-  sealed abstract class ResultResponse                   extends Response
-  case object UpdateAccountResponse                      extends ResultResponse
-  final case class AddTransactionResponse(created: Long) extends ResultResponse
+  case object UpdateAccountResponse                      extends Response
+  final case class AddTransactionResponse(created: Long) extends Response
 
-  object Response extends ResponseCompanion[ResultResponse] {
+  object Response extends ResponseCompanion[Response] {
     override final val ResponseFormats = MessageFormats(
       "updateAccount"  -> Message.objectFormat(UpdateAccountResponse),
       "addTransaction" -> Json.format[AddTransactionResponse]
@@ -157,8 +155,8 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           ),
           JsError(
             Seq(
-              (__ \ "from", Seq(JsonValidationError("error.path.missing"))),
               (__ \ "to", Seq(JsonValidationError("error.path.missing"))),
+              (__ \ "from", Seq(JsonValidationError("error.path.missing"))),
               (__ \ "value", Seq(JsonValidationError("error.path.missing")))
             )
           )
@@ -261,10 +259,9 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
   }
 
   private[this] def commandReadError(jsonRpcRequestMessage: JsonRpcRequestMessage, jsError: JsError) =
-    it(s"should fail to decode with error $jsError") {
-      val jsResult = Command.read(jsonRpcRequestMessage)
-      jsResult should equal(jsError)(after being ordered[Command])
-    }
+    it(s"should fail to decode with error $jsError")(
+      Command.read(jsonRpcRequestMessage) should equal(jsError)
+    )
 
   private[this] def commandRead(implicit jsonRpcRequestMessage: JsonRpcRequestMessage, command: Command) =
     it(s"should decode to $command")(
@@ -280,12 +277,12 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
 
   private[this] def responseRead(implicit jsonRpcResponseMessage: JsonRpcResponseSuccessMessage,
                                  method: String,
-                                 response: ResultResponse) =
+                                 response: Response) =
     it(s"should decode to $response")(
       Response.read(jsonRpcResponseMessage, method) should be(JsSuccess(response))
     )
 
-  private[this] def responseWrite(implicit response: ResultResponse,
+  private[this] def responseWrite(implicit response: Response,
                                   id: CorrelationId,
                                   jsonRpcResponseMessage: JsonRpcResponseSuccessMessage) =
     it(s"should encode to $jsonRpcResponseMessage")(
@@ -293,10 +290,9 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
     )
 
   private[this] def notificationReadError(jsonRpcNotificationMessage: JsonRpcNotificationMessage, jsError: JsError) =
-    it(s"should fail to decode with error $jsError") {
-      val notificationJsResult = Notification.read(jsonRpcNotificationMessage)
-      notificationJsResult should equal(jsError)(after being ordered[Notification])
-    }
+    it(s"should fail to decode with error $jsError")(
+      Notification.read(jsonRpcNotificationMessage) should equal(jsError)
+    )
 
   private[this] def notificationRead(implicit jsonRpcNotificationMessage: JsonRpcNotificationMessage,
                                      notification: Notification) =
@@ -309,7 +305,5 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
     it(s"should encode to $jsonRpcNotificationMessage")(
       Notification.write(notification) should be(jsonRpcNotificationMessage)
     )
-
-  private[this] def ordered[A] = new JsResultUniformity[A]
 
 }
