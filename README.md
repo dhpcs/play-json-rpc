@@ -77,8 +77,8 @@ instance.
 play-json-testkit
 -----------------
 
-The `JsResultUniformity` and `FormatBehaviors` types in the `com.dhpcs.json` package of the testkit module may be
-useful when writing tests in dependent projects. Example use can be seen in the above linked
+The `FormatBehaviors` type in the `com.dhpcs.json` package of the testkit module may be useful when writing tests in
+dependent projects. Example use can be seen in the above linked
 [JsonRpcMessage specification](../v1.5.0/scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala).
 
 
