@@ -1,11 +1,10 @@
 package com.dhpcs.jsonrpc
 
-import com.dhpcs.json.FormatBehaviors
 import com.dhpcs.jsonrpc.JsonRpcMessage._
 import org.scalatest.{FunSpec, Matchers}
 import play.api.libs.json._
 
-class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] with Matchers {
+class JsonRpcMessageSpec extends FunSpec with Matchers {
 
   describe("An arbitrary JsValue")(
     it should behave like readError[JsonRpcMessage](
@@ -855,4 +854,20 @@ class JsonRpcMessageSpec extends FunSpec with FormatBehaviors[JsonRpcMessage] wi
       it should behave like write
     }
   }
+
+  private[this] def readError[A: Format](json: JsValue, jsError: JsError): Unit =
+    it(s"should fail to decode with error $jsError")(
+      Json.fromJson[A](json) should be(jsError)
+    )
+
+  private[this] def read(implicit json: JsValue, jsonRpcMessage: JsonRpcMessage): Unit =
+    it(s"should decode to $jsonRpcMessage")(
+      Json.fromJson(json) should be(JsSuccess(jsonRpcMessage))
+    )
+
+  private[this] def write(implicit jsonRpcMessage: JsonRpcMessage, json: JsValue): Unit =
+    it(s"should encode to $json")(
+      Json.toJson(jsonRpcMessage) should be(json)
+    )
+
 }

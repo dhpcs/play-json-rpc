@@ -74,21 +74,6 @@ specific companion and then format the result of that as JSON, implicitly making
 instance.
 
 
-play-json-testkit
------------------
-
-The `FormatBehaviors` type in the `com.dhpcs.json` package of the testkit module may be useful when writing tests in
-dependent projects. Example use can be seen in the above linked
-[JsonRpcMessage specification](../v1.5.0/scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/JsonRpcMessageSpec.scala).
-
-
-### Testkit resolution and library dependency
-
-```scala
-libraryDependencies += "com.dhpcs" %% "play-json-testkit" % "1.5.0" % Test
-```
-
-
 License
 -------
 

@@ -57,19 +57,6 @@ lazy val playJson = "com.typesafe.play" %% "play-json" % "2.6.0-M5"
 
 lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1"
 
-lazy val playJsonTestkit = project
-  .in(file("play-json-testkit"))
-  .settings(commonSettings)
-  .settings(publishSettings)
-  .settings(
-    name := "play-json-testkit"
-  )
-  .settings(
-    libraryDependencies ++= Seq(
-      playJson,
-      scalaTest
-    ))
-
 lazy val scalaJsonRpc = project
   .in(file("scala-json-rpc"))
   .settings(commonSettings)
@@ -77,13 +64,11 @@ lazy val scalaJsonRpc = project
   .settings(
     name := "scala-json-rpc"
   )
-  .settings(libraryDependencies ++= Seq(
-    playJson
-  ))
-  .dependsOn(playJsonTestkit % Test)
-  .settings(libraryDependencies ++= Seq(
-    scalaTest % Test
-  ))
+  .settings(
+    libraryDependencies ++= Seq(
+      playJson,
+      scalaTest % Test
+    ))
 
 lazy val playJsonRpc = project
   .in(file("play-json-rpc"))
@@ -102,7 +87,6 @@ lazy val root = project
     name := "scala-json-rpc-root"
   )
   .aggregate(
-    playJsonTestkit,
     scalaJsonRpc,
     playJsonRpc
   )
