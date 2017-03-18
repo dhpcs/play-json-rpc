@@ -5,13 +5,12 @@ scala-json-rpc
 [![codecov](https://codecov.io/gh/dhpcs/scala-json-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dhpcs/scala-json-rpc)
 [![Dependencies](https://app.updateimpact.com/badge/835521161172488192/scala-json-rpc-root.svg?config=compile)](https://app.updateimpact.com/latest/835521161172488192/scala-json-rpc-root)
 [![Latest version](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc/latest.svg)](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A Scala library providing types and JSON format typeclass instances for
 [JSON-RPC 2.0](http://www.jsonrpc.org/specification) messages along with support for marshalling application level
 commands, responses and notifications via JSON-RPC 2.0.
 
-Note that prior to version 1.5.0 scala-json-rpc was named play-json-rpc.
+Note that up until version 1.5.0 scala-json-rpc was called play-json-rpc.
 
 
 Status
@@ -20,16 +19,6 @@ Status
 scala-json-rpc is actively maintained and used in multiple production systems. Both the server and client side of
 [Liquidity](https://play.google.com/store/apps/details?id=com.dhpcs.liquidity) use it. Liquidity is the system that
 originally motivated development.
-
-
-Versioning
-----------
-
-All versions greater than 1.0.0 implement the JSON-RPC 2.0 specification.
-
-Patch version increments between versions 1.x.y to 1.5.0 are source compatible with the preceding minor version (e.g.
-1.4.1 is source compatible with 1.4.0). However, minor version increments are not generally source compatible with the
-preceding minor version (i.e. 1.5.0 is not source compatible with 1.4.0).
 
 
 Resolution and library dependency
@@ -62,8 +51,7 @@ how they appear when marshalled to and from JSON.
 
 Note that typical usage does _not_ involve the direct construction of the low level JSON-RPC message types. The
 recommended approach is to make use of the writers provided by the companion bases as demonstrated in the previously
-linked
-[marshalling specification](../v1.5.0/scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala).
+linked marshalling specification.
 
 The companion object for the `JsonRpcMessage` trait provides a play-json Format typeclass instance that can read and
 write "raw" `JsonRpcMessage` types. If you are reading messages received over e.g. a websocket connection and thus
@@ -72,6 +60,16 @@ the appropriate application specific companion to unmarshall the content to one 
 Similarly, when marshalling your application protocol's types, you'll first pass them to the appropriate application
 specific companion and then format the result of that as JSON, implicitly making use of the relevant provided typeclass
 instance.
+
+
+Versioning
+----------
+
+All versions greater than 1.0.0 implement the JSON-RPC 2.0 specification.
+
+Patch version increments between versions 1.x.y to 1.5.0 are source compatible with the preceding minor version (e.g.
+1.4.1 is source compatible with 1.4.0). However, minor version increments are not generally source compatible with the
+preceding minor version (i.e. 1.5.0 is not source compatible with 1.4.0).
 
 
 License
