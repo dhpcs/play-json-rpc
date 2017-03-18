@@ -81,15 +81,15 @@ object JsonRpcMessage {
       Reads(_ => JsError("not a valid request, request batch, response, response batch or notification message")),
     Writes {
       case jsonRpcRequestMessage: JsonRpcRequestMessage =>
-        Json.toJson(jsonRpcRequestMessage)(JsonRpcRequestMessage.JsonRpcRequestMessageFormat)
+        JsonRpcRequestMessage.JsonRpcRequestMessageFormat.writes(jsonRpcRequestMessage)
       case jsonRpcRequestMessageBatch: JsonRpcRequestMessageBatch =>
-        Json.toJson(jsonRpcRequestMessageBatch)(JsonRpcRequestMessageBatch.JsonRpcRequestMessageBatchFormat)
+        JsonRpcRequestMessageBatch.JsonRpcRequestMessageBatchFormat.writes(jsonRpcRequestMessageBatch)
       case jsonRpcResponseMessage: JsonRpcResponseMessage =>
-        Json.toJson(jsonRpcResponseMessage)(JsonRpcResponseMessage.JsonRpcResponseMessageFormat)
+        JsonRpcResponseMessage.JsonRpcResponseMessageFormat.writes(jsonRpcResponseMessage)
       case jsonRpcResponseMessageBatch: JsonRpcResponseMessageBatch =>
-        Json.toJson(jsonRpcResponseMessageBatch)(JsonRpcResponseMessageBatch.JsonRpcResponseMessageBatchFormat)
+        JsonRpcResponseMessageBatch.JsonRpcResponseMessageBatchFormat.writes(jsonRpcResponseMessageBatch)
       case jsonRpcNotificationMessage: JsonRpcNotificationMessage =>
-        Json.toJson(jsonRpcNotificationMessage)(JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat)
+        JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat.writes(jsonRpcNotificationMessage)
     }
   )
 
@@ -125,7 +125,7 @@ object JsonRpcRequestMessage {
   def apply(method: String, params: JsArray, id: CorrelationId): JsonRpcRequestMessage =
     JsonRpcRequestMessage(method, ArrayParams(params), id)
 
-  implicit final val JsonRpcRequestMessageFormat: Format[JsonRpcRequestMessage] = (
+  implicit final val JsonRpcRequestMessageFormat: OFormat[JsonRpcRequestMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
       (__ \ "params").formatNullable[SomeParams] and
@@ -166,7 +166,7 @@ sealed abstract class JsonRpcResponseMessage extends JsonRpcMessage {
 }
 
 object JsonRpcResponseMessage {
-  implicit final val JsonRpcResponseMessageFormat: Format[JsonRpcResponseMessage] = Format(
+  implicit final val JsonRpcResponseMessageFormat: OFormat[JsonRpcResponseMessage] = OFormat(
     Reads(jsValue =>
       (__ \ "error")(jsValue) match {
         case Nil =>
@@ -178,11 +178,11 @@ object JsonRpcResponseMessage {
             .validate(JsonRpcResponseErrorMessage.JsonRpcResponseErrorMessageFormat)
             .map(m => m: JsonRpcResponseMessage)
     }),
-    Writes {
+    OWrites[JsonRpcResponseMessage] {
       case jsonRpcResponseSuccessMessage: JsonRpcResponseSuccessMessage =>
-        Json.toJson(jsonRpcResponseSuccessMessage)(JsonRpcResponseSuccessMessage.JsonRpcResponseSuccessMessageFormat)
+        JsonRpcResponseSuccessMessage.JsonRpcResponseSuccessMessageFormat.writes(jsonRpcResponseSuccessMessage)
       case jsonRpcResponseErrorMessage: JsonRpcResponseErrorMessage =>
-        Json.toJson(jsonRpcResponseErrorMessage)(JsonRpcResponseErrorMessage.JsonRpcResponseErrorMessageFormat)
+        JsonRpcResponseErrorMessage.JsonRpcResponseErrorMessageFormat.writes(jsonRpcResponseErrorMessage)
     }
   )
 }
@@ -190,7 +190,7 @@ object JsonRpcResponseMessage {
 final case class JsonRpcResponseSuccessMessage(result: JsValue, id: CorrelationId) extends JsonRpcResponseMessage
 
 object JsonRpcResponseSuccessMessage {
-  implicit final val JsonRpcResponseSuccessMessageFormat: Format[JsonRpcResponseSuccessMessage] = (
+  implicit final val JsonRpcResponseSuccessMessageFormat: OFormat[JsonRpcResponseSuccessMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "result").format[JsValue] and
       (__ \ "id").format[CorrelationId]
@@ -209,7 +209,7 @@ sealed abstract case class JsonRpcResponseErrorMessage(code: Int,
 
 object JsonRpcResponseErrorMessage {
 
-  implicit final val JsonRpcResponseErrorMessageFormat: Format[JsonRpcResponseErrorMessage] = (
+  implicit final val JsonRpcResponseErrorMessageFormat: OFormat[JsonRpcResponseErrorMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "error" \ "code").format[Int] and
       (__ \ "error" \ "message").format[String] and
@@ -348,7 +348,7 @@ object JsonRpcNotificationMessage {
   def apply(method: String, params: JsArray): JsonRpcNotificationMessage =
     JsonRpcNotificationMessage(method, ArrayParams(params))
 
-  implicit final val JsonRpcNotificationMessageFormat: Format[JsonRpcNotificationMessage] = (
+  implicit final val JsonRpcNotificationMessageFormat: OFormat[JsonRpcNotificationMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
       (__ \ "params").formatNullable[SomeParams]
