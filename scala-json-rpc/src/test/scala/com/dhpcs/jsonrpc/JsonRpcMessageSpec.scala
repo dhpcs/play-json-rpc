@@ -1,64 +1,69 @@
 package com.dhpcs.jsonrpc
 
 import com.dhpcs.jsonrpc.JsonRpcMessage._
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{FreeSpec, Matchers}
 import play.api.libs.json._
 
-class JsonRpcMessageSpec extends FunSpec with Matchers {
+class JsonRpcMessageSpec extends FreeSpec with Matchers {
 
-  describe("An arbitrary JsValue")(
-    it should behave like readError[JsonRpcMessage](
-      Json.parse(
-        """
+  "An arbitrary JsValue" - {
+    val json = Json.parse(
+      """
           |{
           |}""".stripMargin
-      ),
-      JsError("not a valid request, request batch, response, response batch or notification message")
     )
-  )
+    val jsError = JsError("not a valid request, request batch, response, response batch or notification message")
+    s"should fail to decode with error $jsError" in (
+      Json.fromJson[JsonRpcMessage](json) shouldBe jsError
+    )
+  }
 
-  describe("A JsonRpcRequestMessage") {
-    describe("with an incorrect version")(
-      it should behave like readError[JsonRpcRequestMessage](
-        Json.parse(
-          """
+  "A JsonRpcRequestMessage" - {
+    "with an incorrect version" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"3.0",
             |  "method":"testMethod",
             |  "params":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.invalid")
       )
-    )
-    describe("with version of the wrong type")(
-      it should behave like readError[JsonRpcRequestMessage](
-        Json.parse("""
+      val jsError = JsError(__ \ "jsonrpc", "error.invalid")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe
+          jsError
+      )
+    }
+    "with version of the wrong type" - {
+      val json    = Json.parse("""
             |{
             |  "jsonrpc":2.0,
             |  "method":"testMethod",
             |  "params":{"param1":"param1","param2":"param2"},
             |  "id":0
-            |}""".stripMargin),
-        JsError(__ \ "jsonrpc", "error.expected.jsstring")
+            |}""".stripMargin)
+      val jsError = JsError(__ \ "jsonrpc", "error.expected.jsstring")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe jsError
       )
-    )
-    describe("without a version")(
-      it should behave like readError[JsonRpcRequestMessage](
-        Json.parse(
-          """
+    }
+    "without a version" - {
+      val json = Json.parse(
+        """
             |{
             |  "method":"testMethod",
             |  "params":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.path.missing")
       )
-    )
-    describe("with method of the wrong type")(
-      it should behave like readError[JsonRpcRequestMessage](
+      val jsError = JsError(__ \ "jsonrpc", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe jsError
+      )
+    }
+    "with method of the wrong type" - {
+      val json =
         Json.parse(
           """
             |{
@@ -67,12 +72,14 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "params":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "method", "error.expected.jsstring")
+        )
+      val jsError = JsError(__ \ "method", "error.expected.jsstring")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe jsError
       )
-    )
-    describe("without a method")(
-      it should behave like readError[JsonRpcRequestMessage](
+    }
+    "without a method" - {
+      val json =
         Json.parse(
           """
             |{
@@ -80,31 +87,34 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "params":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "method", "error.path.missing")
+        )
+      val jsError = JsError(__ \ "method", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe jsError
       )
-    )
-    describe("with params of the wrong type")(
-      it should behave like readError[JsonRpcRequestMessage](
-        Json.parse(
-          """
-            |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":"params",
-            |  "id":0
-            |}""".stripMargin
-        ),
-        JsError(__ \ "params", "error.expected.jsobjectorjsarray")
+    }
+    "with params of the wrong type" - {
+      val json = Json.parse(
+        """
+          |{
+          |  "jsonrpc":"2.0",
+          |  "method":"testMethod",
+          |  "params":"params",
+          |  "id":0
+          |}""".stripMargin
       )
-    )
-    describe("without params") {
-      implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+      val jsError = JsError(__ \ "params", "error.expected.jsobjectorjsarray")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe jsError
+      )
+    }
+    "without params" - {
+      val jsonRpcRequestMessage = JsonRpcRequestMessage(
         "testMethod",
         NoParams,
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcRequestMessageJson = Json.parse(
+      val jsonRpcRequestMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -112,25 +122,30 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcRequestMessage" in (
+        Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+      )
+      s"should encode to $jsonRpcRequestMessageJson" in (
+        Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+      )
     }
-    describe("without an id")(
-      it should behave like readError[JsonRpcRequestMessage](
-        Json.parse(
-          """
+    "without an id" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"2.0",
             |  "method":"testMethod",
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
-        ),
-        JsError(__ \ "id", "error.path.missing")
       )
-    )
-    describe("with a params array") {
-      describe("and a null id") {
-        implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+      val jsError = JsError(__ \ "id", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe jsError
+      )
+    }
+    "with a params array" - {
+      "and a null id" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
           Json.arr(
             "param1",
@@ -138,7 +153,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           ),
           NoCorrelationId
         )
-        implicit val jsonRpcRequestMessageJson = Json.parse(
+        val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -147,11 +162,15 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":null
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
+        s"should decode to $jsonRpcRequestMessage" in (
+          Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+        )
+        s"should encode to $jsonRpcRequestMessageJson" in (
+          Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+        )
       }
-      describe("and a string id") {
-        implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+      "and a string id" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
           Json.arr(
             "param1",
@@ -159,7 +178,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           ),
           StringCorrelationId("one")
         )
-        implicit val jsonRpcRequestMessageJson = Json.parse(
+        val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -168,11 +187,15 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":"one"
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
+        s"should decode to $jsonRpcRequestMessage" in (
+          Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+        )
+        s"should encode to $jsonRpcRequestMessageJson" in (
+          Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+        )
       }
-      describe("and a numeric id") {
-        implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+      "and a numeric id" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
           Json.arr(
             "param1",
@@ -180,7 +203,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           ),
           NumericCorrelationId(1)
         )
-        implicit val jsonRpcRequestMessageJson = Json.parse(
+        val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -189,10 +212,14 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":1
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
-        describe("with a fractional part") {
-          implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+        s"should decode to $jsonRpcRequestMessage" in (
+          Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+        )
+        s"should encode to $jsonRpcRequestMessageJson" in (
+          Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+        )
+        "with a fractional part" - {
+          val jsonRpcRequestMessage = JsonRpcRequestMessage(
             method = "testMethod",
             Json.arr(
               "param1",
@@ -200,7 +227,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             ),
             NumericCorrelationId(1.1)
           )
-          implicit val jsonRpcRequestMessageJson = Json.parse(
+          val jsonRpcRequestMessageJson = Json.parse(
             """{
               |  "jsonrpc":"2.0",
               |  "method":"testMethod",
@@ -208,14 +235,18 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
               |  "id":1.1
               |}""".stripMargin
           )
-          it should behave like read
-          it should behave like write
+          s"should decode to $jsonRpcRequestMessage" in (
+            Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+          )
+          s"should encode to $jsonRpcRequestMessageJson" in (
+            Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+          )
         }
       }
     }
-    describe("with a params object") {
-      describe("and a null id") {
-        implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+    "with a params object" - {
+      "and a null id" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
           Json.obj(
             "param1" -> "param1",
@@ -223,7 +254,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           ),
           NoCorrelationId
         )
-        implicit val jsonRpcRequestMessageJson = Json.parse(
+        val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -232,11 +263,15 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":null
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
+        s"should decode to $jsonRpcRequestMessage" in (
+          Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+        )
+        s"should encode to $jsonRpcRequestMessageJson" in (
+          Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+        )
       }
-      describe("and a string id") {
-        implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+      "and a string id" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
           Json.obj(
             "param1" -> "param1",
@@ -244,7 +279,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           ),
           StringCorrelationId("one")
         )
-        implicit val jsonRpcRequestMessageJson = Json.parse(
+        val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -253,11 +288,15 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":"one"
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
+        s"should decode to $jsonRpcRequestMessage" in (
+          Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+        )
+        s"should encode to $jsonRpcRequestMessageJson" in (
+          Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+        )
       }
-      describe("and a numeric id") {
-        implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+      "and a numeric id" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "testMethod",
           Json.obj(
             "param1" -> "param1",
@@ -265,7 +304,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           ),
           NumericCorrelationId(1)
         )
-        implicit val jsonRpcRequestMessageJson = Json.parse(
+        val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -274,10 +313,14 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":1
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
-        describe("with a fractional part") {
-          implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
+        s"should decode to $jsonRpcRequestMessage" in (
+          Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+        )
+        s"should encode to $jsonRpcRequestMessageJson" in (
+          Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+        )
+        "with a fractional part" - {
+          val jsonRpcRequestMessage = JsonRpcRequestMessage(
             method = "testMethod",
             Json.obj(
               "param1" -> "param1",
@@ -285,7 +328,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             ),
             NumericCorrelationId(1.1)
           )
-          implicit val jsonRpcRequestMessageJson = Json.parse(
+          val jsonRpcRequestMessageJson = Json.parse(
             """
               |{
               |  "jsonrpc":"2.0",
@@ -294,28 +337,32 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
               |  "id":1.1
               |}""".stripMargin
           )
-          it should behave like read
-          it should behave like write
+          s"should decode to $jsonRpcRequestMessage" in (
+            Json.fromJson(jsonRpcRequestMessageJson) shouldBe JsSuccess(jsonRpcRequestMessage)
+          )
+          s"should encode to $jsonRpcRequestMessageJson" in (
+            Json.toJson(jsonRpcRequestMessage) shouldBe jsonRpcRequestMessageJson
+          )
         }
       }
     }
   }
 
-  describe("A JsonRpcRequestMessageBatch") {
-    describe("with no content")(
-      it should behave like readError[JsonRpcRequestMessageBatch](
-        Json.parse(
-          """
+  "A JsonRpcRequestMessageBatch" - {
+    "with no content" - {
+      val json = Json.parse(
+        """
             |[
             |]""".stripMargin
-        ),
-        JsError(__, "error.invalid")
       )
-    )
-    describe("with an invalid request")(
-      it should behave like readError[JsonRpcRequestMessageBatch](
-        Json.parse(
-          """
+      val jsError = JsError(__, "error.invalid")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessageBatch](json) shouldBe jsError
+      )
+    }
+    "with an invalid request" - {
+      val json = Json.parse(
+        """
             |[
             |  {
             |    "jsonrpc":"2.0",
@@ -323,12 +370,14 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |    "id":1
             |  }
             |]""".stripMargin
-        ),
-        JsError(__(0) \ "method", "error.path.missing")
       )
-    )
-    describe("with a single request") {
-      implicit val jsonRpcRequestMessageBatch = JsonRpcRequestMessageBatch(
+      val jsError = JsError(__(0) \ "method", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessageBatch](json) shouldBe jsError
+      )
+    }
+    "with a single request" - {
+      val jsonRpcRequestMessageBatch = JsonRpcRequestMessageBatch(
         Seq(
           Right(
             JsonRpcRequestMessage(
@@ -341,7 +390,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             ))
         )
       )
-      implicit val jsonRpcRequestMessageBatchJson = Json.parse(
+      val jsonRpcRequestMessageBatchJson = Json.parse(
         """[
           |  {
           |    "jsonrpc":"2.0",
@@ -351,24 +400,29 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  }
           |]""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcRequestMessageBatch" in (
+        Json.fromJson(jsonRpcRequestMessageBatchJson) shouldBe JsSuccess(jsonRpcRequestMessageBatch)
+      )
+      s"should encode to $jsonRpcRequestMessageBatchJson" in (
+        Json.toJson(jsonRpcRequestMessageBatch) shouldBe jsonRpcRequestMessageBatchJson
+      )
     }
-    describe("with an invalid notification")(
-      it should behave like readError[JsonRpcRequestMessageBatch](
-        Json.parse(
-          """
+    "with an invalid notification" - {
+      val json = Json.parse(
+        """
             |[
             |  {
             |    "jsonrpc":"2.0"
             |  }
             |]""".stripMargin
-        ),
-        JsError(__(0) \ "method", "error.path.missing")
       )
-    )
-    describe("with a single notification") {
-      implicit val jsonRpcRequestMessageBatch = JsonRpcRequestMessageBatch(
+      val jsError = JsError(__(0) \ "method", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcRequestMessageBatch](json) shouldBe jsError
+      )
+    }
+    "with a single notification" - {
+      val jsonRpcRequestMessageBatch = JsonRpcRequestMessageBatch(
         Seq(
           Left(
             JsonRpcNotificationMessage(
@@ -381,7 +435,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           )
         )
       )
-      implicit val jsonRpcRequestMessageBatchJson = Json.parse(
+      val jsonRpcRequestMessageBatchJson = Json.parse(
         """
           |[
           |  {
@@ -391,97 +445,107 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  }
           |]""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcRequestMessageBatch" in (
+        Json.fromJson(jsonRpcRequestMessageBatchJson) shouldBe JsSuccess(jsonRpcRequestMessageBatch)
+      )
+      s"should encode to $jsonRpcRequestMessageBatchJson" in (
+        Json.toJson(jsonRpcRequestMessageBatch) shouldBe jsonRpcRequestMessageBatchJson
+      )
     }
   }
 
-  describe("A JsonRpcResponseMessage") {
-    describe("with an incorrect version") {
-      it should behave like readError[JsonRpcResponseMessage](
-        Json.parse(
-          """
+  "A JsonRpcResponseMessage" - {
+    "with an incorrect version" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"3.0",
             |  "result":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.invalid")
+      )
+      val jsError = JsError(__ \ "jsonrpc", "error.invalid")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessage](json) shouldBe jsError
       )
     }
-    describe("with version of the wrong type")(
-      it should behave like readError[JsonRpcResponseMessage](
-        Json.parse(
-          """
+    "with version of the wrong type" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":2.0,
             |  "result":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.expected.jsstring")
       )
-    )
-    describe("without a version")(
-      it should behave like readError[JsonRpcResponseMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "jsonrpc", "error.expected.jsstring")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessage](json) shouldBe jsError
+      )
+    }
+    "without a version" - {
+      val json = Json.parse(
+        """
             |{
             |  "result":{"param1":"param1","param2":"param2"},
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.path.missing")
       )
-    )
-    describe("with an error of the wrong type")(
-      it should behave like readError[JsonRpcResponseMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "jsonrpc", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessage](json) shouldBe jsError
+      )
+    }
+    "with an error of the wrong type" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"2.0",
             |  "error":"error",
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(
-          Seq(
-            (__ \ "error" \ "code", Seq(JsonValidationError("error.path.missing"))),
-            (__ \ "error" \ "message", Seq(JsonValidationError("error.path.missing")))
-          ))
       )
-    )
-    describe("without an error or a result")(
-      it should behave like readError[JsonRpcResponseMessage](
-        Json.parse(
-          """
+      val jsError = JsError(
+        Seq(
+          (__ \ "error" \ "code", Seq(JsonValidationError("error.path.missing"))),
+          (__ \ "error" \ "message", Seq(JsonValidationError("error.path.missing")))
+        ))
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessage](json) shouldBe jsError
+      )
+    }
+    "without an error or a result" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"2.0",
             |  "id":0
             |}""".stripMargin
-        ),
-        JsError(__ \ "result", "error.path.missing")
       )
-    )
-    describe("without an id") {
-      it should behave like readError[JsonRpcResponseMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "result", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessage](json) shouldBe jsError
+      )
+    }
+    "without an id" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"2.0",
             |  "result":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
-        ),
-        JsError(__ \ "id", "error.path.missing")
+      )
+      val jsError = JsError(__ \ "id", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessage](json) shouldBe jsError
       )
     }
-    describe("with a parse error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.parseError(
+    "with a parse error" - {
+      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.parseError(
         new Throwable("Boom"),
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcResponseMessageJson = Json.parse(
+      val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -489,15 +553,19 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessage" in (
+        Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+      )
+      s"should encode to $jsonRpcResponseMessageJson" in (
+        Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+      )
     }
-    describe("with an invalid request error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.invalidRequest(
+    "with an invalid request error" - {
+      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.invalidRequest(
         error = JsError(__ \ "method", "error.path.missing"),
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcResponseMessageJson = Json.parse(
+      val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -505,15 +573,19 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessage" in (
+        Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+      )
+      s"should encode to $jsonRpcResponseMessageJson" in (
+        Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+      )
     }
-    describe("with a method not found error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.methodNotFound(
+    "with a method not found error" - {
+      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.methodNotFound(
         "foo",
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcResponseMessageJson = Json.parse(
+      val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -521,15 +593,19 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessage" in (
+        Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+      )
+      s"should encode to $jsonRpcResponseMessageJson" in (
+        Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+      )
     }
-    describe("with an invalid params error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.invalidParams(
+    "with an invalid params error" - {
+      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.invalidParams(
         error = JsError(__ \ "arg1", "error.path.missing"),
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcResponseMessageJson = Json.parse(
+      val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -537,15 +613,19 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessage" in (
+        Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+      )
+      s"should encode to $jsonRpcResponseMessageJson" in (
+        Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+      )
     }
-    describe("with an internal error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.internalError(
+    "with an internal error" - {
+      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.internalError(
         error = None,
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcResponseMessageJson = Json.parse(
+      val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -553,16 +633,20 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessage" in (
+        Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+      )
+      s"should encode to $jsonRpcResponseMessageJson" in (
+        Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+      )
     }
-    describe("with a server error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.serverError(
+    "with a server error" - {
+      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.serverError(
         code = JsonRpcResponseErrorMessage.ServerErrorCodeFloor,
         error = None,
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcResponseMessageJson = Json.parse(
+      val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -570,17 +654,21 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessage" in (
+        Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+      )
+      s"should encode to $jsonRpcResponseMessageJson" in (
+        Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+      )
     }
-    describe("with an application error") {
-      implicit val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.applicationError(
+    "with an application error" - {
+      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.applicationError(
         code = -31999,
         message = "Boom",
         data = None,
         NumericCorrelationId(1)
       )
-      implicit val jsonRpcResponseMessageJson = Json.parse(
+      val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -588,19 +676,23 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "id":1
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessage" in (
+        Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+      )
+      s"should encode to $jsonRpcResponseMessageJson" in (
+        Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+      )
     }
-    describe("with a result") {
-      describe("and a null id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+    "with a result" - {
+      "and a null id" - {
+        val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
           Json.obj(
             "param1" -> "param1",
             "param2" -> "param2"
           ),
           NoCorrelationId
         )
-        implicit val jsonRpcResponseMessageJson = Json.parse(
+        val jsonRpcResponseMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -608,18 +700,22 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":null
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
+        s"should decode to $jsonRpcResponseMessage" in (
+          Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+        )
+        s"should encode to $jsonRpcResponseMessageJson" in (
+          Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+        )
       }
-      describe("and a string id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+      "and a string id" - {
+        val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
           Json.obj(
             "param1" -> "param1",
             "param2" -> "param2"
           ),
           StringCorrelationId("one")
         )
-        implicit val jsonRpcResponseMessageJson = Json.parse(
+        val jsonRpcResponseMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -627,18 +723,22 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":"one"
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
+        s"should decode to $jsonRpcResponseMessage" in (
+          Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+        )
+        s"should encode to $jsonRpcResponseMessageJson" in (
+          Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+        )
       }
-      describe("and a numeric id") {
-        implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+      "and a numeric id" - {
+        val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
           Json.obj(
             "param1" -> "param1",
             "param2" -> "param2"
           ),
           NumericCorrelationId(1)
         )
-        implicit val jsonRpcResponseMessageJson = Json.parse(
+        val jsonRpcResponseMessageJson = Json.parse(
           """
             |{
             |  "jsonrpc":"2.0",
@@ -646,17 +746,21 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
             |  "id":1
             |}""".stripMargin
         )
-        it should behave like read
-        it should behave like write
-        describe("with a fractional part") {
-          implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+        s"should decode to $jsonRpcResponseMessage" in (
+          Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+        )
+        s"should encode to $jsonRpcResponseMessageJson" in (
+          Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+        )
+        "with a fractional part" - {
+          val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
             Json.obj(
               "param1" -> "param1",
               "param2" -> "param2"
             ),
             NumericCorrelationId(1.1)
           )
-          implicit val jsonRpcResponseMessageJson = Json.parse(
+          val jsonRpcResponseMessageJson = Json.parse(
             """
               |{
               |  "jsonrpc":"2.0",
@@ -664,40 +768,46 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
               |  "id":1.1
               |}""".stripMargin
           )
-          it should behave like read
-          it should behave like write
+          s"should decode to $jsonRpcResponseMessage" in (
+            Json.fromJson(jsonRpcResponseMessageJson) shouldBe JsSuccess(jsonRpcResponseMessage)
+          )
+          s"should encode to $jsonRpcResponseMessageJson" in (
+            Json.toJson(jsonRpcResponseMessage) shouldBe jsonRpcResponseMessageJson
+          )
         }
       }
     }
   }
 
-  describe("A JsonRpcResponseMessageBatch") {
-    describe("with no content")(
-      it should behave like readError[JsonRpcResponseMessageBatch](
-        Json.parse(
-          """
+  "A JsonRpcResponseMessageBatch" - {
+    "with no content" - {
+      val json = Json.parse(
+        """
             |[
             |]""".stripMargin
-        ),
-        JsError(__, "error.invalid")
       )
-    )
-    describe("with an invalid response")(
-      it should behave like readError[JsonRpcResponseMessageBatch](
-        Json.parse(
-          """
+      val jsError = JsError(__, "error.invalid")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessageBatch](json) shouldBe jsError
+      )
+    }
+    "with an invalid response" - {
+      val json = Json.parse(
+        """
             |[
             |  {
             |    "jsonrpc":"2.0",
             |    "id":1
             |  }
             |]""".stripMargin
-        ),
-        JsError(__(0) \ "result", "error.path.missing")
       )
-    )
-    describe("with a single response") {
-      implicit val jsonRpcResponseMessageBatch = JsonRpcResponseMessageBatch(
+      val jsError = JsError(__(0) \ "result", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcResponseMessageBatch](json) shouldBe jsError
+      )
+    }
+    "with a single response" - {
+      val jsonRpcResponseMessageBatch = JsonRpcResponseMessageBatch(
         Seq(
           JsonRpcResponseSuccessMessage(
             Json.obj(
@@ -708,7 +818,7 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           )
         )
       )
-      implicit val jsonRpcResponseMessageBatchJson = Json.parse(
+      val jsonRpcResponseMessageBatchJson = Json.parse(
         """
           |[
           |  {
@@ -718,112 +828,126 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  }
           |]""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcResponseMessageBatch" in (
+        Json.fromJson(jsonRpcResponseMessageBatchJson) shouldBe JsSuccess(jsonRpcResponseMessageBatch)
+      )
+      s"should encode to $jsonRpcResponseMessageBatchJson" in (
+        Json.toJson(jsonRpcResponseMessageBatch) shouldBe jsonRpcResponseMessageBatchJson
+      )
     }
   }
 
-  describe("A JsonRpcNotificationMessage") {
-    describe("with an incorrect version")(
-      it should behave like readError[JsonRpcNotificationMessage](
-        Json.parse(
-          """
+  "A JsonRpcNotificationMessage" - {
+    "with an incorrect version" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"3.0",
             |  "method":"testMethod",
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.invalid")
       )
-    )
-    describe("with version of the wrong type")(
-      it should behave like readError[JsonRpcNotificationMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "jsonrpc", "error.invalid")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcNotificationMessage](json) shouldBe jsError
+      )
+    }
+    "with version of the wrong type" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":2.0,
             |  "method":"testMethod",
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.expected.jsstring")
       )
-    )
-    describe("without a version")(
-      it should behave like readError[JsonRpcNotificationMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "jsonrpc", "error.expected.jsstring")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcNotificationMessage](json) shouldBe jsError
+      )
+    }
+    "without a version" - {
+      val json = Json.parse(
+        """
             |{
             |  "method":"testMethod",
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
-        ),
-        JsError(__ \ "jsonrpc", "error.path.missing")
       )
-    )
-    describe("with method of the wrong type")(
-      it should behave like readError[JsonRpcNotificationMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "jsonrpc", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcNotificationMessage](json) shouldBe jsError
+      )
+    }
+    "with method of the wrong type" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"2.0",
             |  "method":3.0,
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
-        ),
-        JsError(__ \ "method", "error.expected.jsstring")
       )
-    )
-    describe("without a method")(
-      it should behave like readError[JsonRpcNotificationMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "method", "error.expected.jsstring")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcNotificationMessage](json) shouldBe jsError
+      )
+    }
+    "without a method" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"2.0",
             |  "params":{"param1":"param1","param2":"param2"}
             |}""".stripMargin
-        ),
-        JsError(__ \ "method", "error.path.missing")
       )
-    )
-    describe("with params of the wrong type")(
-      it should behave like readError[JsonRpcNotificationMessage](
-        Json.parse(
-          """
+      val jsError = JsError(__ \ "method", "error.path.missing")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcNotificationMessage](json) shouldBe jsError
+      )
+    }
+    "with params of the wrong type" - {
+      val json = Json.parse(
+        """
             |{
             |  "jsonrpc":"2.0",
             |  "method":"testMethod",
             |  "params":"params"
             |}""".stripMargin
-        ),
-        JsError(__ \ "params", "error.expected.jsobjectorjsarray")
       )
-    )
-    describe("without params") {
-      implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
+      val jsError = JsError(__ \ "params", "error.expected.jsobjectorjsarray")
+      s"should fail to decode with error $jsError" in (
+        Json.fromJson[JsonRpcNotificationMessage](json) shouldBe jsError
+      )
+    }
+    "without params" - {
+      val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "testMethod",
         NoParams
       )
-      implicit val jsonRpcNotificationMessageJson = Json.parse(
+      val jsonRpcNotificationMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
           |  "method":"testMethod"
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcNotificationMessage" in (
+        Json.fromJson(jsonRpcNotificationMessageJson) shouldBe JsSuccess(jsonRpcNotificationMessage)
+      )
+      s"should encode to $jsonRpcNotificationMessageJson" in (
+        Json.toJson(jsonRpcNotificationMessage) shouldBe jsonRpcNotificationMessageJson
+      )
     }
-    describe("with a params array") {
-      implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
+    "with a params array" - {
+      val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "testMethod",
         Json.arr(
           "param1",
           "param2"
         )
       )
-      implicit val jsonRpcNotificationMessageJson = Json.parse(
+      val jsonRpcNotificationMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -831,18 +955,22 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "params":["param1","param2"]
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcNotificationMessage" in (
+        Json.fromJson(jsonRpcNotificationMessageJson) shouldBe JsSuccess(jsonRpcNotificationMessage)
+      )
+      s"should encode to $jsonRpcNotificationMessageJson" in (
+        Json.toJson(jsonRpcNotificationMessage) shouldBe jsonRpcNotificationMessageJson
+      )
     }
-    describe("with a params object") {
-      implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
+    "with a params object" - {
+      val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "testMethod",
         Json.obj(
           "param1" -> "param1",
           "param2" -> "param2"
         )
       )
-      implicit val jsonRpcNotificationMessageJson = Json.parse(
+      val jsonRpcNotificationMessageJson = Json.parse(
         """
           |{
           |  "jsonrpc":"2.0",
@@ -850,24 +978,12 @@ class JsonRpcMessageSpec extends FunSpec with Matchers {
           |  "params":{"param1":"param1","param2":"param2"}
           |}""".stripMargin
       )
-      it should behave like read
-      it should behave like write
+      s"should decode to $jsonRpcNotificationMessage" in (
+        Json.fromJson(jsonRpcNotificationMessageJson) shouldBe JsSuccess(jsonRpcNotificationMessage)
+      )
+      s"should encode to $jsonRpcNotificationMessageJson" in (
+        Json.toJson(jsonRpcNotificationMessage) shouldBe jsonRpcNotificationMessageJson
+      )
     }
   }
-
-  private[this] def readError[A: Format](json: JsValue, jsError: JsError): Unit =
-    it(s"should fail to decode with error $jsError")(
-      Json.fromJson[A](json) should be(jsError)
-    )
-
-  private[this] def read(implicit json: JsValue, jsonRpcMessage: JsonRpcMessage): Unit =
-    it(s"should decode to $jsonRpcMessage")(
-      Json.fromJson(json) should be(JsSuccess(jsonRpcMessage))
-    )
-
-  private[this] def write(implicit jsonRpcMessage: JsonRpcMessage, json: JsValue): Unit =
-    it(s"should encode to $json")(
-      Json.toJson(jsonRpcMessage) should be(json)
-    )
-
 }

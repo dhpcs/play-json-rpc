@@ -122,47 +122,50 @@ object MessageCompanionsSpec {
   }
 }
 
-class MessageCompanionsSpec extends FunSpec with Matchers {
+class MessageCompanionsSpec extends FreeSpec with Matchers {
 
-  describe("A Command") {
-    describe("with an invalid method")(
-      it should behave like commandReadError(
-        JsonRpcRequestMessage(
-          method = "invalidMethod",
+  "A Command" - {
+    "with an invalid method" - {
+      val jsonRpcRequestMessage = JsonRpcRequestMessage(
+        method = "invalidMethod",
+        Json.obj(),
+        NumericCorrelationId(1)
+      )
+      val jsError = JsError("unknown method invalidMethod")
+      s"should fail to decode with error $jsError" in (
+        Command.read(jsonRpcRequestMessage) shouldBe jsError
+      )
+    }
+    "of type AddTransactionCommand" - {
+      "with params of the wrong type" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
+          method = "addTransaction",
+          Json.arr(),
+          NumericCorrelationId(1)
+        )
+        val jsError = JsError(__, "command parameters must be named")
+        s"should fail to decode with error $jsError" in (
+          Command.read(jsonRpcRequestMessage) shouldBe jsError
+        )
+      }
+      "with empty params" - {
+        val jsonRpcRequestMessage = JsonRpcRequestMessage(
+          method = "addTransaction",
           Json.obj(),
           NumericCorrelationId(1)
-        ),
-        JsError("unknown method invalidMethod")
-      )
-    )
-    describe("of type AddTransactionCommand") {
-      describe("with params of the wrong type")(
-        it should behave like commandReadError(
-          JsonRpcRequestMessage(
-            method = "addTransaction",
-            Json.arr(),
-            NumericCorrelationId(1)
-          ),
-          JsError(__, "command parameters must be named")
         )
-      )
-      describe("with empty params")(
-        it should behave like commandReadError(
-          JsonRpcRequestMessage(
-            method = "addTransaction",
-            Json.obj(),
-            NumericCorrelationId(1)
-          ),
-          JsError(
-            Seq(
-              (__ \ "to", Seq(JsonValidationError("error.path.missing"))),
-              (__ \ "from", Seq(JsonValidationError("error.path.missing"))),
-              (__ \ "value", Seq(JsonValidationError("error.path.missing")))
-            )
+        val jsError = JsError(
+          Seq(
+            (__ \ "to", Seq(JsonValidationError("error.path.missing"))),
+            (__ \ "from", Seq(JsonValidationError("error.path.missing"))),
+            (__ \ "value", Seq(JsonValidationError("error.path.missing")))
           )
         )
-      )
-      implicit val addTransactionCommand = AddTransactionCommand(
+        s"should fail to decode with error $jsError" in (
+          Command.read(jsonRpcRequestMessage) shouldBe jsError
+        )
+      }
+      val addTransactionCommand = AddTransactionCommand(
         from = 0,
         to = 1,
         value = BigDecimal(1000000),
@@ -173,9 +176,9 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           )
         )
       )
-      implicit val id = NumericCorrelationId(1)
-      implicit val jsonRpcRequestMessage = JsonRpcRequestMessage(
-        "addTransaction",
+      val id = NumericCorrelationId(1)
+      val jsonRpcRequestMessage = JsonRpcRequestMessage(
+        method = "addTransaction",
         Json.obj(
           "from"        -> 0,
           "to"          -> 1,
@@ -187,59 +190,68 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
         ),
         NumericCorrelationId(1)
       )
-      it should behave like commandRead
-      it should behave like commandWrite
+      s"should decode to $addTransactionCommand" in (
+        Command.read(jsonRpcRequestMessage) shouldBe JsSuccess(addTransactionCommand)
+      )
+      s"should encode to $jsonRpcRequestMessage" in (
+        Command.write(addTransactionCommand, id) shouldBe jsonRpcRequestMessage
+      )
     }
   }
 
-  describe("A Response")(
-    describe("of type AddTransactionResponse") {
-      implicit val addTransactionResponse = AddTransactionResponse(
-        created = 1434115187612L
-      )
-      implicit val id = NumericCorrelationId(1)
-      implicit val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
-        Json.obj(
-          "created" -> 1434115187612L
-        ),
-        NumericCorrelationId(1)
-      )
-      implicit val method = "addTransaction"
-      it should behave like responseRead
-      it should behave like responseWrite
-    }
-  )
-
-  describe("A Notification") {
-    describe("with an invalid method")(
-      it should behave like notificationReadError(
-        JsonRpcNotificationMessage(
-          method = "invalidMethod",
-          Json.obj()
-        ),
-        JsError("unknown method invalidMethod")
-      )
+  "A Response of type AddTransactionResponse" - {
+    val addTransactionResponse = AddTransactionResponse(
+      created = 1434115187612L
     )
-    describe("of type TransactionAddedNotification") {
-      describe("with params of the wrong type")(
-        it should behave like notificationReadError(
-          JsonRpcNotificationMessage(
-            method = "transactionAdded",
-            Json.arr()
-          ),
-          JsError(__, "notification parameters must be named")
-        )
+    val id = NumericCorrelationId(1)
+    val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
+      Json.obj(
+        "created" -> 1434115187612L
+      ),
+      NumericCorrelationId(1)
+    )
+    val method = "addTransaction"
+    s"should decode to $addTransactionResponse" in (
+      Response.read(jsonRpcResponseMessage, method) shouldBe JsSuccess(addTransactionResponse)
+    )
+    s"should encode to $jsonRpcResponseMessage" in (
+      Response.write(addTransactionResponse, id) shouldBe jsonRpcResponseMessage
+    )
+  }
+
+  "A Notification" - {
+    "with an invalid method" - {
+      val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
+        method = "invalidMethod",
+        Json.obj()
       )
-      describe("with empty params") {
-        it should behave like notificationReadError(
-          JsonRpcNotificationMessage(
-            method = "transactionAdded",
-            Json.obj()
-          ),
-          JsError(__ \ "transaction", "error.path.missing")
+      val jsError = JsError("unknown method invalidMethod")
+      s"should fail to decode with error $jsError" in (
+        Notification.read(jsonRpcNotificationMessage) shouldBe jsError
+      )
+    }
+    "of type TransactionAddedNotification" - {
+      "with params of the wrong type" - {
+        val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
+          method = "transactionAdded",
+          Json.arr()
+        )
+        val jsError = JsError(__, "notification parameters must be named")
+        s"should fail to decode with error $jsError" in (
+          Notification.read(jsonRpcNotificationMessage) shouldBe jsError
         )
       }
-      implicit val clientJoinedZoneNotification = TransactionAddedNotification(
+      "with empty params" - {
+        val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
+          method = "transactionAdded",
+          Json.obj()
+        )
+        val jsError = JsError(__ \ "transaction", "error.path.missing")
+        s"should fail to decode with error $jsError" in (
+          Notification.read(jsonRpcNotificationMessage) shouldBe jsError
+        )
+      }
+      val clientJoinedZoneNotification = TransactionAddedNotification(
         Transaction(
           from = 0,
           to = 1,
@@ -247,63 +259,18 @@ class MessageCompanionsSpec extends FunSpec with Matchers {
           created = 1434115187612L
         )
       )
-      implicit val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
+      val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "transactionAdded",
         params = Json.obj(
           "transaction" -> Json.parse("""{"from":0,"to":1,"value":1000000,"created":1434115187612}""")
         )
       )
-      it should behave like notificationRead
-      it should behave like notificationWrite
+      s"should decode to $clientJoinedZoneNotification" in (
+        Notification.read(jsonRpcNotificationMessage) shouldBe JsSuccess(clientJoinedZoneNotification)
+      )
+      s"should encode to $jsonRpcNotificationMessage" in (
+        Notification.write(clientJoinedZoneNotification) shouldBe jsonRpcNotificationMessage
+      )
     }
   }
-
-  private[this] def commandReadError(jsonRpcRequestMessage: JsonRpcRequestMessage, jsError: JsError) =
-    it(s"should fail to decode with error $jsError")(
-      Command.read(jsonRpcRequestMessage) should equal(jsError)
-    )
-
-  private[this] def commandRead(implicit jsonRpcRequestMessage: JsonRpcRequestMessage, command: Command) =
-    it(s"should decode to $command")(
-      Command.read(jsonRpcRequestMessage) should be(JsSuccess(command))
-    )
-
-  private[this] def commandWrite(implicit command: Command,
-                                 id: CorrelationId,
-                                 jsonRpcRequestMessage: JsonRpcRequestMessage) =
-    it(s"should encode to $jsonRpcRequestMessage")(
-      Command.write(command, id) should be(jsonRpcRequestMessage)
-    )
-
-  private[this] def responseRead(implicit jsonRpcResponseMessage: JsonRpcResponseSuccessMessage,
-                                 method: String,
-                                 response: Response) =
-    it(s"should decode to $response")(
-      Response.read(jsonRpcResponseMessage, method) should be(JsSuccess(response))
-    )
-
-  private[this] def responseWrite(implicit response: Response,
-                                  id: CorrelationId,
-                                  jsonRpcResponseMessage: JsonRpcResponseSuccessMessage) =
-    it(s"should encode to $jsonRpcResponseMessage")(
-      Response.write(response, id) should be(jsonRpcResponseMessage)
-    )
-
-  private[this] def notificationReadError(jsonRpcNotificationMessage: JsonRpcNotificationMessage, jsError: JsError) =
-    it(s"should fail to decode with error $jsError")(
-      Notification.read(jsonRpcNotificationMessage) should equal(jsError)
-    )
-
-  private[this] def notificationRead(implicit jsonRpcNotificationMessage: JsonRpcNotificationMessage,
-                                     notification: Notification) =
-    it(s"should decode to $notification")(
-      Notification.read(jsonRpcNotificationMessage) should be(JsSuccess(notification))
-    )
-
-  private[this] def notificationWrite(implicit notification: Notification,
-                                      jsonRpcNotificationMessage: JsonRpcNotificationMessage) =
-    it(s"should encode to $jsonRpcNotificationMessage")(
-      Notification.write(notification) should be(jsonRpcNotificationMessage)
-    )
-
 }
