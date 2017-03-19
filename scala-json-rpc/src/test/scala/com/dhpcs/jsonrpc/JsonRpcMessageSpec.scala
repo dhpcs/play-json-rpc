@@ -4,6 +4,8 @@ import com.dhpcs.jsonrpc.JsonRpcMessage._
 import org.scalatest.{FreeSpec, Matchers}
 import play.api.libs.json._
 
+import scala.collection.immutable.Seq
+
 class JsonRpcMessageSpec extends FreeSpec with Matchers {
 
   "An arbitrary JsValue" - {

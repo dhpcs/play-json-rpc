@@ -7,7 +7,7 @@ import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json._
 
-import scala.collection.Seq
+import scala.collection.immutable.Seq
 
 sealed abstract class JsonRpcMessage
 
@@ -18,7 +18,7 @@ object JsonRpcMessage {
   sealed abstract class CorrelationId
 
   object CorrelationId {
-    implicit final val CorrelationIdFormat: Format[CorrelationId] = Format(
+    implicit final lazy val CorrelationIdFormat: Format[CorrelationId] = Format(
       Reads {
         case JsNull          => JsSuccess(NoCorrelationId)
         case JsNumber(value) => JsSuccess(NumericCorrelationId(value))
@@ -56,7 +56,7 @@ object JsonRpcMessage {
   sealed abstract class SomeParams extends Params
 
   object SomeParams {
-    implicit final val SomeParamsFormat: Format[SomeParams] = Format(
+    implicit final lazy val SomeParamsFormat: Format[SomeParams] = Format(
       Reads {
         case jsValue: JsObject => JsSuccess(ObjectParams(jsValue))
         case jsArray: JsArray  => JsSuccess(ArrayParams(jsArray))
@@ -72,7 +72,7 @@ object JsonRpcMessage {
   final case class ObjectParams(value: JsObject) extends SomeParams
   final case class ArrayParams(value: JsArray)   extends SomeParams
 
-  implicit final val JsonRpcMessageFormat: Format[JsonRpcMessage] = Format(
+  implicit final lazy val JsonRpcMessageFormat: Format[JsonRpcMessage] = Format(
     __.read(JsonRpcRequestMessage.JsonRpcRequestMessageFormat).map(m => m: JsonRpcMessage) orElse
       __.read(JsonRpcRequestMessageBatch.JsonRpcRequestMessageBatchFormat).map(m => m: JsonRpcMessage) orElse
       __.read(JsonRpcResponseMessage.JsonRpcResponseMessageFormat).map(m => m: JsonRpcMessage) orElse
@@ -125,7 +125,7 @@ object JsonRpcRequestMessage {
   def apply(method: String, params: JsArray, id: CorrelationId): JsonRpcRequestMessage =
     JsonRpcRequestMessage(method, ArrayParams(params), id)
 
-  implicit final val JsonRpcRequestMessageFormat: OFormat[JsonRpcRequestMessage] = (
+  implicit final lazy val JsonRpcRequestMessageFormat: OFormat[JsonRpcRequestMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
       (__ \ "params").formatNullable[SomeParams] and
@@ -147,10 +147,11 @@ final case class JsonRpcRequestMessageBatch(messages: Seq[Either[JsonRpcNotifica
 
 object JsonRpcRequestMessageBatch {
 
-  implicit final val RequestOrNotificationFormat: Format[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]] =
+  implicit final lazy val RequestOrNotificationFormat
+    : Format[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]] =
     eitherValueFormat[JsonRpcNotificationMessage, JsonRpcRequestMessage]
 
-  implicit final val JsonRpcRequestMessageBatchFormat: Format[JsonRpcRequestMessageBatch] = Format(
+  implicit final lazy val JsonRpcRequestMessageBatchFormat: Format[JsonRpcRequestMessageBatch] = Format(
     Reads
       .of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]](verifying(_.nonEmpty))
       .map(JsonRpcRequestMessageBatch(_)),
@@ -166,7 +167,7 @@ sealed abstract class JsonRpcResponseMessage extends JsonRpcMessage {
 }
 
 object JsonRpcResponseMessage {
-  implicit final val JsonRpcResponseMessageFormat: OFormat[JsonRpcResponseMessage] = OFormat(
+  implicit final lazy val JsonRpcResponseMessageFormat: OFormat[JsonRpcResponseMessage] = OFormat(
     Reads(jsValue =>
       (__ \ "error")(jsValue) match {
         case Nil =>
@@ -190,7 +191,7 @@ object JsonRpcResponseMessage {
 final case class JsonRpcResponseSuccessMessage(result: JsValue, id: CorrelationId) extends JsonRpcResponseMessage
 
 object JsonRpcResponseSuccessMessage {
-  implicit final val JsonRpcResponseSuccessMessageFormat: OFormat[JsonRpcResponseSuccessMessage] = (
+  implicit final lazy val JsonRpcResponseSuccessMessageFormat: OFormat[JsonRpcResponseSuccessMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "result").format[JsValue] and
       (__ \ "id").format[CorrelationId]
@@ -209,7 +210,7 @@ sealed abstract case class JsonRpcResponseErrorMessage(code: Int,
 
 object JsonRpcResponseErrorMessage {
 
-  implicit final val JsonRpcResponseErrorMessageFormat: OFormat[JsonRpcResponseErrorMessage] = (
+  implicit final lazy val JsonRpcResponseErrorMessageFormat: OFormat[JsonRpcResponseErrorMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "error" \ "code").format[Int] and
       (__ \ "error" \ "message").format[String] and
@@ -328,7 +329,11 @@ final case class JsonRpcResponseMessageBatch(messages: Seq[JsonRpcResponseMessag
 }
 
 object JsonRpcResponseMessageBatch {
-  implicit final val JsonRpcResponseMessageBatchFormat: Format[JsonRpcResponseMessageBatch] = Format(
+  // This prevents a cyclic dependency on JsonRpcMessageFormat that would otherwise be chosen during implicit
+  // resolution due to Writes being contravariant, combined with https://issues.scala-lang.org/browse/SI-2509.
+  // See also: https://github.com/playframework/play-json/issues/51.
+  import JsonRpcResponseMessage.JsonRpcResponseMessageFormat
+  implicit final lazy val JsonRpcResponseMessageBatchFormat: Format[JsonRpcResponseMessageBatch] = Format(
     Reads
       .of[Seq[JsonRpcResponseMessage]](verifying(_.nonEmpty))
       .map(JsonRpcResponseMessageBatch(_)),
@@ -348,7 +353,7 @@ object JsonRpcNotificationMessage {
   def apply(method: String, params: JsArray): JsonRpcNotificationMessage =
     JsonRpcNotificationMessage(method, ArrayParams(params))
 
-  implicit final val JsonRpcNotificationMessageFormat: OFormat[JsonRpcNotificationMessage] = (
+  implicit final lazy val JsonRpcNotificationMessageFormat: OFormat[JsonRpcNotificationMessage] = (
     (__ \ "jsonrpc").format(verifying[String](_ == JsonRpcMessage.Version)) and
       (__ \ "method").format[String] and
       (__ \ "params").formatNullable[SomeParams]
