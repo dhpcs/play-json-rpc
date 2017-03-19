@@ -8,12 +8,8 @@ import scala.collection.immutable.Seq
 
 class JsonRpcMessageSpec extends FreeSpec with Matchers {
 
-  "An arbitrary JsValue" - {
-    val json = Json.parse(
-      """
-          |{
-          |}""".stripMargin
-    )
+  "An invalid JsValue" - {
+    val json    = Json.parse("{}")
     val jsError = JsError("not a valid request, request batch, response, response batch or notification message")
     s"should fail to decode with error $jsError" in (
       Json.fromJson[JsonRpcMessage](json) shouldBe jsError
@@ -33,8 +29,7 @@ class JsonRpcMessageSpec extends FreeSpec with Matchers {
       )
       val jsError = JsError(__ \ "jsonrpc", "error.invalid")
       s"should fail to decode with error $jsError" in (
-        Json.fromJson[JsonRpcRequestMessage](json) shouldBe
-          jsError
+        Json.fromJson[JsonRpcRequestMessage](json) shouldBe jsError
       )
     }
     "with version of the wrong type" - {
