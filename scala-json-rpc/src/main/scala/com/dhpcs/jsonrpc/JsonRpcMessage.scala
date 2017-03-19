@@ -3,8 +3,8 @@ package com.dhpcs.jsonrpc
 import com.dhpcs.jsonrpc.JsonRpcMessage.ParamsOps._
 import com.dhpcs.jsonrpc.JsonRpcMessage._
 import play.api.libs.functional.syntax._
-import play.api.libs.json.Json.JsValueWrapper
-import play.api.libs.json.Reads.verifying
+import play.api.libs.json.Json.toJsFieldJsValueWrapper
+import play.api.libs.json.Reads._
 import play.api.libs.json._
 
 import scala.collection.immutable.Seq
@@ -301,10 +301,8 @@ object JsonRpcResponseErrorMessage {
       message,
       data = Some(
         Json.obj(
-          ("meaning" -> meaning: (String, JsValueWrapper)) +:
-            error.fold[Seq[(String, JsValueWrapper)]](ifEmpty = Nil)(
-            error => Seq("error" -> error)
-          ): _*
+          ("meaning" -> toJsFieldJsValueWrapper(meaning)) +:
+            error.toSeq.map(error => "error" -> toJsFieldJsValueWrapper(error)): _*
         )
       ),
       id
