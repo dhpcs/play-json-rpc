@@ -93,29 +93,36 @@ object JsonRpcMessage {
     }
   )
 
-  def eitherObjectFormat[A: Format, B: Format](leftKey: String, rightKey: String): Format[Either[A, B]] =
-    OFormat(
-      (__ \ rightKey).read[B].map(b => Right(b): Either[A, B]) orElse
-        (__ \ leftKey).read[A].map(a => Left(a): Either[A, B]),
-      OWrites[Either[A, B]] {
-        case Right(rightValue) => Json.obj(rightKey -> Json.toJson(rightValue))
-        case Left(leftValue)   => Json.obj(leftKey  -> Json.toJson(leftValue))
-      }
-    )
-
-  def eitherValueFormat[A: Format, B: Format]: Format[Either[A, B]] =
-    Format(
-      __.read[B].map(b => Right(b): Either[A, B]) orElse
-        __.read[A].map(a => Left(a): Either[A, B]),
-      Writes[Either[A, B]] {
-        case Right(rightValue) => Json.toJson(rightValue)
-        case Left(leftValue)   => Json.toJson(leftValue)
-      }
-    )
-
 }
 
-final case class JsonRpcRequestMessage(method: String, params: Params, id: CorrelationId) extends JsonRpcMessage
+sealed trait JsonRpcRequestOrNotificationMessage
+
+object JsonRpcRequestOrNotificationMessage {
+  implicit final lazy val JsonRpcRequestOrNotificationMessageFormat: OFormat[JsonRpcRequestOrNotificationMessage] =
+    OFormat(
+      Reads(jsValue =>
+        (__ \ "id")(jsValue) match {
+          case Nil =>
+            jsValue
+              .validate(JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat)
+              .map(m => m: JsonRpcRequestOrNotificationMessage)
+          case _ =>
+            jsValue
+              .validate(JsonRpcRequestMessage.JsonRpcRequestMessageFormat)
+              .map(m => m: JsonRpcRequestOrNotificationMessage)
+      }),
+      OWrites[JsonRpcRequestOrNotificationMessage] {
+        case jsonRpcRequestMessage: JsonRpcRequestMessage =>
+          JsonRpcRequestMessage.JsonRpcRequestMessageFormat.writes(jsonRpcRequestMessage)
+        case jsonRpcNotificationMessage: JsonRpcNotificationMessage =>
+          JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat.writes(jsonRpcNotificationMessage)
+      }
+    )
+}
+
+final case class JsonRpcRequestMessage(method: String, params: Params, id: CorrelationId)
+    extends JsonRpcMessage
+    with JsonRpcRequestOrNotificationMessage
 
 object JsonRpcRequestMessage {
 
@@ -140,26 +147,20 @@ object JsonRpcRequestMessage {
   )
 }
 
-final case class JsonRpcRequestMessageBatch(messages: Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]])
+final case class JsonRpcRequestMessageBatch(messages: Seq[JsonRpcRequestOrNotificationMessage])
     extends JsonRpcMessage {
   require(messages.nonEmpty)
 }
 
 object JsonRpcRequestMessageBatch {
-
-  implicit final lazy val RequestOrNotificationFormat
-    : Format[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]] =
-    eitherValueFormat[JsonRpcNotificationMessage, JsonRpcRequestMessage]
-
   implicit final lazy val JsonRpcRequestMessageBatchFormat: Format[JsonRpcRequestMessageBatch] = Format(
     Reads
-      .of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]](verifying(_.nonEmpty))
+      .of[Seq[JsonRpcRequestOrNotificationMessage]](verifying(_.nonEmpty))
       .map(JsonRpcRequestMessageBatch(_)),
     Writes
-      .of[Seq[Either[JsonRpcNotificationMessage, JsonRpcRequestMessage]]]
+      .of[Seq[JsonRpcRequestOrNotificationMessage]]
       .contramap(_.messages)
   )
-
 }
 
 sealed abstract class JsonRpcResponseMessage extends JsonRpcMessage {
@@ -341,7 +342,9 @@ object JsonRpcResponseMessageBatch {
   )
 }
 
-final case class JsonRpcNotificationMessage(method: String, params: Params) extends JsonRpcMessage
+final case class JsonRpcNotificationMessage(method: String, params: Params)
+    extends JsonRpcMessage
+    with JsonRpcRequestOrNotificationMessage
 
 object JsonRpcNotificationMessage {
 

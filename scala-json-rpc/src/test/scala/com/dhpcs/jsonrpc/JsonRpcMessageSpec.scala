@@ -381,16 +381,14 @@ class JsonRpcMessageSpec extends FreeSpec with Matchers {
     "with a single request" - {
       val jsonRpcRequestMessageBatch = JsonRpcRequestMessageBatch(
         Seq(
-          Right(
-            JsonRpcRequestMessage(
-              method = "testMethod",
-              Json.obj(
-                "param1" -> "param1",
-                "param2" -> "param2"
-              ),
-              NumericCorrelationId(1)
-            ))
-        )
+          JsonRpcRequestMessage(
+            method = "testMethod",
+            Json.obj(
+              "param1" -> "param1",
+              "param2" -> "param2"
+            ),
+            NumericCorrelationId(1)
+          ))
       )
       val jsonRpcRequestMessageBatchJson = Json.parse(
         """[
@@ -426,13 +424,11 @@ class JsonRpcMessageSpec extends FreeSpec with Matchers {
     "with a single notification" - {
       val jsonRpcRequestMessageBatch = JsonRpcRequestMessageBatch(
         Seq(
-          Left(
-            JsonRpcNotificationMessage(
-              method = "testMethod",
-              Json.obj(
-                "param1" -> "param1",
-                "param2" -> "param2"
-              )
+          JsonRpcNotificationMessage(
+            method = "testMethod",
+            Json.obj(
+              "param1" -> "param1",
+              "param2" -> "param2"
             )
           )
         )
