@@ -132,7 +132,7 @@ class MessageCompanionsSpec extends FreeSpec {
         NumericCorrelationId(1)
       )
       val jsError = JsError("unknown method invalidMethod")
-      s"will fail to decode with error $jsError" in (
+      s"will fail to decode with error $jsError" in assert(
         Command.read(jsonRpcRequestMessage) === jsError
       )
     }
@@ -144,7 +144,7 @@ class MessageCompanionsSpec extends FreeSpec {
           NumericCorrelationId(1)
         )
         val jsError = JsError(__, "command parameters must be named")
-        s"will fail to decode with error $jsError" in (
+        s"will fail to decode with error $jsError" in assert(
           Command.read(jsonRpcRequestMessage) === jsError
         )
       }
@@ -161,7 +161,7 @@ class MessageCompanionsSpec extends FreeSpec {
             (__ \ "value", Seq(JsonValidationError("error.path.missing")))
           )
         )
-        s"will fail to decode with error $jsError" in (
+        s"will fail to decode with error $jsError" in assert(
           Command.read(jsonRpcRequestMessage) === jsError
         )
       }
@@ -190,10 +190,10 @@ class MessageCompanionsSpec extends FreeSpec {
         ),
         NumericCorrelationId(1)
       )
-      s"will decode to $addTransactionCommand" in (
+      s"will decode to $addTransactionCommand" in assert(
         Command.read(jsonRpcRequestMessage) === JsSuccess(addTransactionCommand)
       )
-      s"will encode to $jsonRpcRequestMessage" in (
+      s"will encode to $jsonRpcRequestMessage" in assert(
         Command.write(addTransactionCommand, id) === jsonRpcRequestMessage
       )
     }
@@ -211,10 +211,10 @@ class MessageCompanionsSpec extends FreeSpec {
       NumericCorrelationId(1)
     )
     val method = "addTransaction"
-    s"will decode to $addTransactionResponse" in (
+    s"will decode to $addTransactionResponse" in assert(
       Response.read(jsonRpcResponseMessage, method) === JsSuccess(addTransactionResponse)
     )
-    s"will encode to $jsonRpcResponseMessage" in (
+    s"will encode to $jsonRpcResponseMessage" in assert(
       Response.write(addTransactionResponse, id) === jsonRpcResponseMessage
     )
   }
@@ -226,7 +226,7 @@ class MessageCompanionsSpec extends FreeSpec {
         Json.obj()
       )
       val jsError = JsError("unknown method invalidMethod")
-      s"will fail to decode with error $jsError" in (
+      s"will fail to decode with error $jsError" in assert(
         Notification.read(jsonRpcNotificationMessage) === jsError
       )
     }
@@ -237,7 +237,7 @@ class MessageCompanionsSpec extends FreeSpec {
           Json.arr()
         )
         val jsError = JsError(__, "notification parameters must be named")
-        s"will fail to decode with error $jsError" in (
+        s"will fail to decode with error $jsError" in assert(
           Notification.read(jsonRpcNotificationMessage) === jsError
         )
       }
@@ -247,7 +247,7 @@ class MessageCompanionsSpec extends FreeSpec {
           Json.obj()
         )
         val jsError = JsError(__ \ "transaction", "error.path.missing")
-        s"will fail to decode with error $jsError" in (
+        s"will fail to decode with error $jsError" in assert(
           Notification.read(jsonRpcNotificationMessage) === jsError
         )
       }
@@ -265,10 +265,10 @@ class MessageCompanionsSpec extends FreeSpec {
           "transaction" -> Json.parse("""{"from":0,"to":1,"value":1000000,"created":1434115187612}""")
         )
       )
-      s"will decode to $clientJoinedZoneNotification" in (
+      s"will decode to $clientJoinedZoneNotification" in assert(
         Notification.read(jsonRpcNotificationMessage) === JsSuccess(clientJoinedZoneNotification)
       )
-      s"will encode to $jsonRpcNotificationMessage" in (
+      s"will encode to $jsonRpcNotificationMessage" in assert(
         Notification.write(clientJoinedZoneNotification) === jsonRpcNotificationMessage
       )
     }
