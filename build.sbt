@@ -1,5 +1,5 @@
 lazy val commonSettings = Seq(
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.12.2",
   scalacOptions in Compile ++= Seq(
     "-target:jvm-1.8",
     "-encoding",
