@@ -57,7 +57,7 @@ lazy val noopPublishSettings = Seq(
 
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.6.0-M7"
 
-lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.2"
+lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.3"
 
 lazy val scalaJsonRpc = project
   .in(file("scala-json-rpc"))
