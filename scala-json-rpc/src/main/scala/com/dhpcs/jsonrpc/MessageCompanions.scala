@@ -68,7 +68,7 @@ trait NotificationCompanion[A] {
       case None => JsError(s"unknown method ${jsonRpcNotificationMessage.method}")
       case Some(reads) =>
         jsonRpcNotificationMessage.params match {
-          case NoParams       => JsError("command parameters must be given")
+          case NoParams       => JsError("notification parameters must be given")
           case ArrayParams(_) => JsError("notification parameters must be named")
           case ObjectParams(value) =>
             reads.reads(value) match {
