@@ -55,10 +55,6 @@ lazy val noopPublishSettings = Seq(
   publish := {}
 )
 
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.6.0-M7"
-
-lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.3"
-
 lazy val scalaJsonRpc = project
   .in(file("scala-json-rpc"))
   .settings(commonSettings)
@@ -68,8 +64,8 @@ lazy val scalaJsonRpc = project
   )
   .settings(
     libraryDependencies ++= Seq(
-      playJson,
-      scalaTest % Test
+      "com.typesafe.play" %% "play-json" % "2.6.0-M7",
+      "org.scalatest"     %% "scalatest" % "3.0.3" % Test
     ))
 
 lazy val playJsonRpc = project
