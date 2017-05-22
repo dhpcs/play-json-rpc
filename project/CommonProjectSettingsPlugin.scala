@@ -8,25 +8,53 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
   private[this] val scalaSettings = Seq(
     scalaVersion := "2.12.2",
     crossScalaVersions := Seq("2.11.11", "2.12.2"),
-    scalacOptions in Compile ++= Seq(
-      "-target:jvm-1.8",
-      "-encoding",
-      "UTF-8",
-      "-deprecation",
-      "-feature",
-      "-unchecked",
-      "-Xfuture",
-      "-Xlint",
-      "-Yno-adapted-args",
-      "-Ywarn-dead-code",
-      "-Ywarn-inaccessible",
-      "-Ywarn-infer-any",
-      "-Ywarn-nullary-override",
-      "-Ywarn-nullary-unit",
-      "-Ywarn-numeric-widen",
-      "-Ywarn-unused",
-      "-Ywarn-unused-import"
-    )
+    // See https://tpolecat.github.io/2017/04/25/scalac-flags.html for explanations. 2.11 doesn't support all of these,
+    // so we simply don't set any of them when building for 2.11. The 2.12 build will pick up any issues anyway.
+    scalacOptions in Compile ++= (CrossVersion.binaryScalaVersion(scalaVersion.value) match {
+      case "2.12" =>
+        Seq(
+          "-deprecation",
+          "-encoding",
+          "utf-8",
+          "-explaintypes",
+          "-feature",
+          "-unchecked",
+          "-Xfatal-warnings",
+          "-Xlint:adapted-args",
+          "-Xlint:by-name-right-associative",
+          "-Xlint:constant",
+          "-Xlint:delayedinit-select",
+          "-Xlint:doc-detached",
+          "-Xlint:inaccessible",
+          "-Xlint:infer-any",
+          "-Xlint:missing-interpolator",
+          "-Xlint:nullary-override",
+          "-Xlint:nullary-unit",
+          "-Xlint:option-implicit",
+          "-Xlint:package-object-classes",
+          "-Xlint:poly-implicit-overload",
+          "-Xlint:private-shadow",
+          "-Xlint:stars-align",
+          "-Xlint:type-parameter-shadow",
+          "-Xlint:unsound-match",
+          "-Yno-adapted-args",
+          "-Ywarn-dead-code",
+          "-Ywarn-extra-implicit",
+          "-Ywarn-inaccessible",
+          "-Ywarn-infer-any",
+          "-Ywarn-nullary-override",
+          "-Ywarn-nullary-unit",
+          "-Ywarn-numeric-widen",
+          "-Ywarn-unused:implicits",
+          "-Ywarn-unused:imports",
+          "-Ywarn-unused:locals",
+          "-Ywarn-unused:params",
+          "-Ywarn-unused:patvars",
+          "-Ywarn-unused:privates",
+          "-Ywarn-value-discard"
+        )
+      case "2.11" => Seq("-encoding", "utf-8")
+    })
   )
 
   private[this] val publishSettings = Seq(
