@@ -57,6 +57,10 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
     })
   )
 
+  private lazy val resolverSettings = Seq(
+    conflictManager := ConflictManager.strict
+  )
+
   private lazy val publishSettings = Seq(
     homepage := Some(url("https://github.com/dhpcs/scala-json-rpc/")),
     startYear := Some(2015),
@@ -87,6 +91,7 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] =
     scalaSettings ++
+      resolverSettings ++
       addCommandAlias("validate", ";scalafmtTest; coverage; test; coverageReport") ++
       addCommandAlias("validateAggregate", ";coverageAggregate") ++
       publishSettings
