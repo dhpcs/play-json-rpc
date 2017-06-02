@@ -92,8 +92,8 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] =
     scalaSettings ++
       resolverSettings ++
-      addCommandAlias("validate", ";scalafmtTest; coverage; test; coverageReport") ++
-      addCommandAlias("validateAggregate", ";coverageAggregate") ++
+      addCommandAlias("validate", ";scalafmtTest; test") ++
+      addCommandAlias("coverage", ";clean; coverage; test; coverageReport") ++
       publishSettings
 
 }
