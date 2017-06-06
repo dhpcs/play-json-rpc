@@ -93,7 +93,6 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
     scalaSettings ++
       resolverSettings ++
       addCommandAlias("validate", ";scalafmtTest; test") ++
-      addCommandAlias("coverage", ";clean; coverage; test; coverageReport") ++
       publishSettings
 
 }
