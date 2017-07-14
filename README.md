@@ -1,7 +1,7 @@
 scala-json-rpc
 ==============
 
-[![Build status](https://travis-ci.org/dhpcs/scala-json-rpc.svg?branch=master)](https://travis-ci.org/dhpcs/scala-json-rpc)
+[![CircleCI](https://circleci.com/gh/dhpcs/scala-json-rpc.svg?style=shield)](https://circleci.com/gh/dhpcs/scala-json-rpc)
 [![codecov](https://codecov.io/gh/dhpcs/scala-json-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dhpcs/scala-json-rpc)
 [![Dependencies](https://app.updateimpact.com/badge/835521161172488192/scala-json-rpc-root.svg?config=compile)](https://app.updateimpact.com/latest/835521161172488192/scala-json-rpc-root)
 [![Latest version](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc/latest.svg)](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc)
