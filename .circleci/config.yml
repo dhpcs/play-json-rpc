@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run: cat /dev/null | sbt clean scalafmtTest coverage +test coverageReport
+      - run: bash <(curl -s https://codecov.io/bash)
+      - run: 'if [ "$CIRCLE_PULL_REQUESTS" = "" ]; then sbt +updateImpactSubmit; fi'
