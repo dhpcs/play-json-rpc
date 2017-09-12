@@ -1,10 +1,27 @@
 import bintray.BintrayPlugin.autoImport.{bintrayOrganization, bintrayPackageLabels}
 import sbt.Keys._
 import sbt._
-import sbtrelease.ReleasePlugin
 import sbtrelease.ReleasePlugin.autoImport.releaseCrossBuild
 
-object CommonProjectSettingsPlugin extends AutoPlugin {
+object CommonSettingsPlugin extends AutoPlugin {
+
+  override def trigger: PluginTrigger = allRequirements
+
+  override def globalSettings: Seq[Setting[_]] =
+    addCommandAlias(
+      "validate",
+      ";scalafmtTest; test"
+    )
+
+  override def buildSettings: Seq[Setting[_]] =
+    resolverSettings ++
+      scalaSettings ++
+      testSettings ++
+      publishSettings
+
+  private lazy val resolverSettings = Seq(
+    conflictManager := ConflictManager.strict
+  )
 
   private lazy val scalaSettings = Seq(
     scalaVersion := "2.12.3",
@@ -67,8 +84,8 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
     })
   )
 
-  private lazy val resolverSettings = Seq(
-    conflictManager := ConflictManager.strict
+  private lazy val testSettings = Seq(
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
 
   private lazy val publishSettings = Seq(
@@ -96,15 +113,5 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
     bintrayPackageLabels := Seq("scala", "json-rpc"),
     releaseCrossBuild := true
   )
-
-  override def trigger: PluginTrigger = allRequirements
-
-  override def requires: Plugins = ReleasePlugin
-
-  override def projectSettings: Seq[Setting[_]] =
-    scalaSettings ++
-      resolverSettings ++
-      addCommandAlias("validate", ";scalafmtTest; test") ++
-      publishSettings
 
 }
