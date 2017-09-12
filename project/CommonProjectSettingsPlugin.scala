@@ -7,11 +7,12 @@ import sbtrelease.ReleasePlugin.autoImport.releaseCrossBuild
 object CommonProjectSettingsPlugin extends AutoPlugin {
 
   private lazy val scalaSettings = Seq(
-    scalaVersion := "2.12.2",
-    crossScalaVersions := Seq("2.11.11", "2.12.2"),
+    scalaVersion := "2.12.3",
+    crossScalaVersions := Seq("2.11.11", "2.12.3"),
     // See https://tpolecat.github.io/2017/04/25/scalac-flags.html for explanations. 2.11 doesn't support all of these,
     // so we simply don't set any of them when building for 2.11. The 2.12 build will pick up any issues anyway.
-    scalacOptions in Compile ++= (CrossVersion.binaryScalaVersion(scalaVersion.value) match {
+    scalacOptions ++= (CrossVersion
+      .binaryScalaVersion(scalaVersion.value) match {
       case "2.12" =>
         Seq(
           "-deprecation",
@@ -19,8 +20,15 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
           "utf-8",
           "-explaintypes",
           "-feature",
+          "-language:existentials",
+          "-language:experimental.macros",
+          "-language:higherKinds",
+          "-language:implicitConversions",
           "-unchecked",
+          // TODO: Re-enable this when Scala 2.12.4 is released (see https://github.com/scala/scala/pull/6024).
+          // "-Xcheckinit",
           "-Xfatal-warnings",
+          "-Xfuture",
           "-Xlint:adapted-args",
           "-Xlint:by-name-right-associative",
           "-Xlint:constant",
@@ -39,6 +47,7 @@ object CommonProjectSettingsPlugin extends AutoPlugin {
           "-Xlint:type-parameter-shadow",
           "-Xlint:unsound-match",
           "-Yno-adapted-args",
+          "-Ypartial-unification",
           "-Ywarn-dead-code",
           "-Ywarn-extra-implicit",
           "-Ywarn-inaccessible",
