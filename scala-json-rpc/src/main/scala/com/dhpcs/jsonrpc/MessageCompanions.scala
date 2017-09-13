@@ -40,7 +40,7 @@ trait ResponseCompanion[A] {
 
   private[this] lazy val (methodReads, classWrites) = ResponseFormats
 
-  protected[this] val ResponseFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, OWrites[_ <: A])])
+  protected[this] val ResponseFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, Writes[_ <: A])])
 
   def read(jsonRpcResponseSuccessMessage: JsonRpcResponseSuccessMessage, method: String): JsResult[_ <: A] =
     methodReads(method).reads(jsonRpcResponseSuccessMessage.result) match {
@@ -52,7 +52,7 @@ trait ResponseCompanion[A] {
   def write[B <: A](response: B, id: CorrelationId): JsonRpcResponseSuccessMessage = {
     val (_, writes) =
       classWrites.getOrElse(response.getClass, sys.error(s"No format found for ${response.getClass}"))
-    val bWrites = writes.asInstanceOf[OWrites[B]]
+    val bWrites = writes.asInstanceOf[Writes[B]]
     JsonRpcResponseSuccessMessage(bWrites.writes(response), id)
   }
 }
@@ -95,8 +95,8 @@ object Message {
   }
 
   object MessageFormats {
-    def apply[A](messageFormats: MessageFormat[_ <: A]*)
-      : (Map[String, Reads[_ <: A]], Map[Class[_], (String, OWrites[_ <: A])]) = {
+    def apply[A, W[_] <: Writes[_]](
+        messageFormats: MessageFormat[_ <: A]*): (Map[String, Reads[_ <: A]], Map[Class[_], (String, W[_ <: A])]) = {
       val methods = messageFormats.map(_.method)
       require(
         methods == methods.distinct,
@@ -114,14 +114,14 @@ object Message {
       val writes = messageFormats.map(
         messageFormat =>
           messageFormat.classTag.runtimeClass ->
-            (messageFormat.method             -> messageFormat.format.asInstanceOf[OWrites[_ <: A]]))
+            (messageFormat.method             -> messageFormat.format.asInstanceOf[W[_ <: A]]))
       (reads.toMap, writes.toMap)
     }
   }
 
   def objectFormat[A](o: A): OFormat[A] = OFormat(
     _.validate[JsObject].map(_ => o),
-    (_: A) => Json.obj()
+    (_: A) => JsObject.empty
   )
 
 }

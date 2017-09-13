@@ -55,14 +55,17 @@ object MessageCompanionsSpec {
     )
   }
 
-  sealed abstract class Response                         extends Message
-  case object UpdateAccountResponse                      extends Response
-  final case class AddTransactionResponse(created: Long) extends Response
+  sealed abstract class Response                   extends Message
+  case object UpdateAccountResponse                extends Response
+  final case class AddTransactionResponse(id: Int) extends Response
 
   object Response extends ResponseCompanion[Response] {
     override final val ResponseFormats = MessageFormats(
-      "updateAccount"  -> Message.objectFormat(UpdateAccountResponse),
-      "addTransaction" -> Json.format[AddTransactionResponse]
+      "updateAccount" -> Message.objectFormat(UpdateAccountResponse),
+      "addTransaction" -> Format[AddTransactionResponse](
+        Reads.of[Int].map(AddTransactionResponse),
+        Writes.of[Int].contramap(_.id)
+      )
     )
   }
 
@@ -83,39 +86,38 @@ object MessageCompanionsSpec {
     implicit final val AccountFormat: Format[Account] = Json.format[Account]
   }
 
-  final case class Transaction(from: Int,
+  final case class Transaction(id: Int,
+                               from: Int,
                                to: Int,
                                value: BigDecimal,
-                               created: Long,
                                description: Option[String] = None,
                                metadata: Option[JsObject] = None) {
     require(value >= 0)
-    require(created >= 0)
   }
 
   object Transaction {
     implicit final val TransactionFormat: Format[Transaction] = (
-      (JsPath \ "from").format[Int] and
+      (JsPath \ "id").format[Int] and
+        (JsPath \ "from").format[Int] and
         (JsPath \ "to").format[Int] and
         (JsPath \ "value").format(min[BigDecimal](0)) and
-        (JsPath \ "created").format(min[Long](0)) and
         (JsPath \ "description").formatNullable[String] and
         (JsPath \ "metadata").formatNullable[JsObject]
     )(
-      (from, to, value, created, description, metadata) =>
+      (id, from, to, value, description, metadata) =>
         Transaction(
+          id,
           from,
           to,
           value,
-          created,
           description,
           metadata
       ),
       transaction =>
-        (transaction.from,
+        (transaction.id,
+         transaction.from,
          transaction.to,
          transaction.value,
-         transaction.created,
          transaction.description,
          transaction.metadata)
     )
@@ -128,7 +130,7 @@ class MessageCompanionsSpec extends FreeSpec {
     "with an invalid method" - {
       val jsonRpcRequestMessage = JsonRpcRequestMessage(
         method = "invalidMethod",
-        Json.obj(),
+        JsObject.empty,
         NumericCorrelationId(1)
       )
       val jsError = JsError("unknown method invalidMethod")
@@ -140,7 +142,7 @@ class MessageCompanionsSpec extends FreeSpec {
       "with params of the wrong type" - {
         val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "addTransaction",
-          Json.arr(),
+          JsArray.empty,
           NumericCorrelationId(1)
         )
         val jsError = JsError(__, "command parameters must be named")
@@ -151,7 +153,7 @@ class MessageCompanionsSpec extends FreeSpec {
       "with empty params" - {
         val jsonRpcRequestMessage = JsonRpcRequestMessage(
           method = "addTransaction",
-          Json.obj(),
+          JsObject.empty,
           NumericCorrelationId(1)
         )
         val jsError = JsError(
@@ -200,14 +202,10 @@ class MessageCompanionsSpec extends FreeSpec {
   }
 
   "A Response of type AddTransactionResponse" - {
-    val addTransactionResponse = AddTransactionResponse(
-      created = 1434115187612L
-    )
-    val id = NumericCorrelationId(1)
+    val addTransactionResponse = AddTransactionResponse(id = 0)
+    val id                     = NumericCorrelationId(1)
     val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
-      Json.obj(
-        "created" -> 1434115187612L
-      ),
+      JsNumber(0),
       NumericCorrelationId(1)
     )
     val method = "addTransaction"
@@ -223,7 +221,7 @@ class MessageCompanionsSpec extends FreeSpec {
     "with an invalid method" - {
       val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "invalidMethod",
-        Json.obj()
+        JsObject.empty
       )
       val jsError = JsError("unknown method invalidMethod")
       s"will fail to decode with error $jsError" in assert(
@@ -234,7 +232,7 @@ class MessageCompanionsSpec extends FreeSpec {
       "with params of the wrong type" - {
         val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
           method = "transactionAdded",
-          Json.arr()
+          JsArray.empty
         )
         val jsError = JsError(__, "notification parameters must be named")
         s"will fail to decode with error $jsError" in assert(
@@ -244,7 +242,7 @@ class MessageCompanionsSpec extends FreeSpec {
       "with empty params" - {
         val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
           method = "transactionAdded",
-          Json.obj()
+          JsObject.empty
         )
         val jsError = JsError(__ \ "transaction", "error.path.missing")
         s"will fail to decode with error $jsError" in assert(
@@ -253,16 +251,16 @@ class MessageCompanionsSpec extends FreeSpec {
       }
       val clientJoinedZoneNotification = TransactionAddedNotification(
         Transaction(
+          id = 0,
           from = 0,
           to = 1,
-          value = BigDecimal(1000000),
-          created = 1434115187612L
+          value = BigDecimal(1000000)
         )
       )
       val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "transactionAdded",
         params = Json.obj(
-          "transaction" -> Json.parse("""{"from":0,"to":1,"value":1000000,"created":1434115187612}""")
+          "transaction" -> Json.parse("""{"id":0,"from":0,"to":1,"value":1000000}""")
         )
       )
       s"will decode to $clientJoinedZoneNotification" in assert(
