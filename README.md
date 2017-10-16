@@ -1,5 +1,4 @@
-scala-json-rpc
-==============
+# scala-json-rpc
 
 [![CircleCI](https://circleci.com/gh/dhpcs/scala-json-rpc.svg?style=shield)](https://circleci.com/gh/dhpcs/scala-json-rpc)
 [![codecov](https://codecov.io/gh/dhpcs/scala-json-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dhpcs/scala-json-rpc)
@@ -15,8 +14,7 @@ Note that up until version 1.5.0 scala-json-rpc was called play-json-rpc. It was
 the server and client side of [Liquidity](https://play.google.com/store/apps/details?id=com.dhpcs.liquidity).
 
 
-Resolution and library dependency
----------------------------------
+## Resolution and library dependency
 
 ```scala
 resolvers += Resolver.bintrayRepo("dhpcs", "maven")
@@ -25,8 +23,7 @@ libraryDependencies += "com.dhpcs" %% "scala-json-rpc" % "x.y.z"
 ```
 
 
-Marshalling application level types
------------------------------------
+## Marshalling application level types
 
 The `CommandCompanion`, `ResponseCompanion` and `NotificationCompanion` bases defined in
 [MessageCompanions.scala](scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/MessageCompanions.scala) provide readers and
@@ -34,8 +31,7 @@ writers for hierarchies of application level types. Example use can be seen in
 [MessageCompanionsSpec.scala](scala-json-rpc/src/test/scala/com/dhpcs/jsonrpc/MessageCompanionsSpec.scala).
 
 
-JSON-RPC message types
-----------------------
+## JSON-RPC message types
 
 The JSON-RPC message types are represented by an ADT defined in
 [JsonRpcMessage.scala](scala-json-rpc/src/main/scala/com/dhpcs/jsonrpc/JsonRpcMessage.scala). The JsonRpcMessage
@@ -55,7 +51,6 @@ specific companion and then format the result of that as JSON, implicitly making
 instance.
 
 
-License
--------
+## License
 
 scala-json-rpc is licensed under the Apache 2 License.
