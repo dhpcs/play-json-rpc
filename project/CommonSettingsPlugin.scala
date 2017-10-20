@@ -27,7 +27,7 @@ object CommonSettingsPlugin extends AutoPlugin {
   )
 
   private lazy val scalaBuildSettings = Seq(
-    scalaVersion := "2.12.3",
+    scalaVersion := "2.12.4",
     crossScalaVersions := Seq("2.11.11", "2.12.3"),
     // See https://tpolecat.github.io/2017/04/25/scalac-flags.html for explanations. 2.11 doesn't support all of these,
     // so we simply don't set any of them when building for 2.11. The 2.12 build will pick up any issues anyway.
@@ -45,8 +45,7 @@ object CommonSettingsPlugin extends AutoPlugin {
           "-language:higherKinds",
           "-language:implicitConversions",
           "-unchecked",
-          // TODO: Re-enable this when Scala 2.12.4 is released (see https://github.com/scala/scala/pull/6024).
-          // "-Xcheckinit",
+          "-Xcheckinit",
           "-Xfatal-warnings",
           "-Xfuture",
           "-Xlint:adapted-args",
