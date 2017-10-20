@@ -1,4 +1,8 @@
-import bintray.BintrayPlugin.autoImport.{bintrayOrganization, bintrayPackageLabels}
+import bintray.BintrayPlugin.autoImport.{
+  bintrayOrganization,
+  bintrayPackageLabels
+}
+import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleasePlugin.autoImport.releaseCrossBuild
@@ -10,12 +14,14 @@ object CommonSettingsPlugin extends AutoPlugin {
   override def globalSettings: Seq[Setting[_]] =
     addCommandAlias(
       "validate",
-      ";scalafmtTest; test"
+      ";reload plugins; sbt:scalafmt::test; scalafmt::test; reload return; " +
+        "sbt:scalafmt::test; scalafmt::test; test:scalafmt::test; test"
     )
 
   override def buildSettings: Seq[Setting[_]] =
     resolverBuildSettings ++
       scalaBuildSettings ++
+      scalafmtBuildSettings ++
       testBuildSettings ++
       publishBuildSettings
 
@@ -24,6 +30,10 @@ object CommonSettingsPlugin extends AutoPlugin {
 
   private lazy val resolverBuildSettings = Seq(
     conflictManager := ConflictManager.strict
+  )
+
+  private lazy val scalafmtBuildSettings = Seq(
+    ScalafmtCorePlugin.autoImport.scalafmtVersion := "1.3.0"
   )
 
   private lazy val scalaBuildSettings = Seq(
@@ -83,7 +93,13 @@ object CommonSettingsPlugin extends AutoPlugin {
           "-Ywarn-value-discard"
         )
       case "2.11" => Seq("-encoding", "utf-8")
-    })
+    }),
+    dependencyOverrides ++= Seq(
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+      "org.scala-lang" % "scala-library" % scalaVersion.value,
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.scala-lang" % "scalap" % scalaVersion.value
+    )
   )
 
   private lazy val testBuildSettings = Seq(
@@ -94,7 +110,8 @@ object CommonSettingsPlugin extends AutoPlugin {
     homepage := Some(url("https://github.com/dhpcs/scala-json-rpc/")),
     startYear := Some(2015),
     description := "A Scala library providing types and JSON format typeclass instances for JSON-RPC 2.0 messages along with support for marshalling application level commands, responses and notifications via JSON-RPC 2.0.",
-    licenses += "Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt"),
+    licenses += "Apache-2.0" -> url(
+      "https://www.apache.org/licenses/LICENSE-2.0.txt"),
     organization := "com.dhpcs",
     organizationHomepage := Some(url("https://www.dhpcs.com/")),
     organizationName := "dhpcs",

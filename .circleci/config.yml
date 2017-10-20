@@ -5,6 +5,6 @@ jobs:
       - image: circleci/openjdk:8-jdk
     steps:
       - checkout
-      - run: cat /dev/null | sbt clean scalafmtTest coverage +test +coverageReport
+      - run: sbt ";reload plugins; sbt:scalafmt::test; scalafmt::test; reload return; sbt:scalafmt::test; scalafmt::test; test:scalafmt::test"
+      - run: sbt ";coverage; test; coverageReport"
       - run: bash <(curl -s https://codecov.io/bash)
-      - run: 'if [ "$CIRCLE_PULL_REQUESTS" = "" ]; then cat /dev/null | sbt +updateImpactSubmit; fi'

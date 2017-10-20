@@ -147,8 +147,7 @@ object JsonRpcRequestMessage {
   )
 }
 
-final case class JsonRpcRequestMessageBatch(messages: Seq[JsonRpcRequestOrNotificationMessage])
-    extends JsonRpcMessage {
+final case class JsonRpcRequestMessageBatch(messages: Seq[JsonRpcRequestOrNotificationMessage]) extends JsonRpcMessage {
   require(messages.nonEmpty)
 }
 
