@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:9
     steps:
       - checkout
       - run: sbt ";reload plugins; sbt:scalafmt::test; scalafmt::test; reload return; sbt:scalafmt::test; scalafmt::test; test:scalafmt::test"
