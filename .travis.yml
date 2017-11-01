@@ -1,0 +1,12 @@
+language: scala
+
+jdk:
+  - oraclejdk8
+
+script:
+  - sbt ";reload plugins; sbt:scalafmt::test; scalafmt::test; reload return; sbt:scalafmt::test; scalafmt::test; test:scalafmt::test"
+  - sbt ";compile"
+  - sbt ";coverage; test; coverageReport"
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

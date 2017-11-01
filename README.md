@@ -1,8 +1,8 @@
 # scala-json-rpc
 
-[![CircleCI](https://circleci.com/gh/dhpcs/scala-json-rpc.svg?style=shield)](https://circleci.com/gh/dhpcs/scala-json-rpc)
+[![Build Status](https://travis-ci.org/dhpcs/scala-json-rpc.svg?branch=master)](https://travis-ci.org/dhpcs/scala-json-rpc)
 [![codecov](https://codecov.io/gh/dhpcs/scala-json-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dhpcs/scala-json-rpc)
-[![Latest version](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc/latest.svg)](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc)
+[![Latest Version](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc/latest.svg)](https://index.scala-lang.org/dhpcs/scala-json-rpc/scala-json-rpc)
 
 A Scala library providing types and JSON format typeclass instances for [JSON-RPC
 2.0](http://www.jsonrpc.org/specification) messages along with support for marshalling application level commands,
