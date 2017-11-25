@@ -1,12 +1,18 @@
 language: scala
-
 jdk:
   - oraclejdk8
-
+env:
+  global:
+  - secure: aE57mflme9toW7C0wY0DqAn+cUsX3WiGtuF37EIDg+/+7CiiXWgeDhVV7+cxO9ZJTBU4Svw20v4a1CWvJOR2Ji3NHksB347H5H3vuCF/tDobDvu3qfdl+EGN2tUSXxQe+CjWl2vYuo8ls/HMKLb+mApi9wSNrFM7K8ysCevN6LBzmlsyofnA0b1AOQPbFIumlsMg1v6fnYcguIDU75uDlAzhhzIDYhCequm8uad4FSWfQgNN/BknhUU9/vZpcwqAjkuc/vjkamJOHVBBUmwfxY86OqdGsrDNHmyac3PfePwWnLyxLFbng86Jh4Qb+zkUfLEppqgAg8IqWp4mNR/9td0cmn4rH1BT29quSuYv2j8fc3nSUiQ3KPI6D/f2fIjrzKk/EPnmEV+StSWA8g68lVRCGojI+cWaJTeaXv96zxg7V5VRc01ig4cm5xHizYKSAdUQMvQjw/wVQyHcemI5mUHKYft5owzgJaahb/KQTUAde9Xu/WVfcfkQUIjdXC5xCwmQi0+9vUWiy7ZbW15tRSdl6RgCZWce09FqOcloLjzAjUyz/h5bEY88rZsj/RvSn1kXwa4qhddXdfI2iui/PwKK8mJCWMYtV2IZj/KE39mIke7/B2wh5yjvofWrHbCPFG4DwqPSXjNemPBP2C2RYnA0yR1ItXLetRikkLhIdMo=
+  - secure: WMdNhI3BDH9htPUzP8+RfcFNzTRcRrHszylFdul5SodetzvNP2v3P82wqoTW8vZeGCZPf/QK1NVmgIhFFbS14dlLjBl10/TyX8ou9Ga5HGJGH7YUxKQLorwrZohckkzA2OP3Gs1DM52vsCwP5x2sRKGslKZupgnPF8xf9CmvnjBuk8V0aSoDFFJYj1FbiuIAViKE+VqvcETJBH656MAACSYJnYp55dMVkiW2rUABscpzx62qR8cvO2RKPOCoJccBN6I31T0LiguaWwFUhJ3J1cWFoCbBB6+QsBEwe39a80jr18p+NBOy6HDxzEwyt1HlEcBwjtGIIfhmeSIvKq1NMhT42LzDkR2BRn+88wS/Pt6lvM1Ut19yBRKSt3aYH56O29i9QnDYbSwTdTY48ELFY5NQ0bQ4aG9T8kjO5q2O/vHKFcGC8JjQlAqVxyQy2dB3+UC1rycAYl8X/kd1GTpzhMapMmUB3JUF12mvzNr97YqVzTmcZEH7/lAt5DmDlH2ofoTzmSRmxDpwNdpokZqUiqU5L0Hv3IRjZufvFdWEholhZyFut1oj0smu6XRnXaHLuuoBnTmYbGlc+w5beSQBpc8lIWTb99Ui0b8wb6PxidrRwo4iSENBO0wZ5MmPYC6vSa0pBXB1hXFW195sa9Gh5YXPqItdurcpkIRTw2OwQq8=
 script:
-  - sbt ";reload plugins; sbt:scalafmt::test; scalafmt::test; reload return; sbt:scalafmt::test; scalafmt::test; test:scalafmt::test"
+  - git fetch --unshallow # So that sbt-dynver derives the version correctly
+  - sbt ";reload plugins; sbt:scalafmt::test; scalafmt::test; reload return; sbt:scalafmt::test;
+    scalafmt::test; test:scalafmt::test"
   - sbt ";compile"
   - sbt ";coverage; test; coverageReport"
-
-after_success:
   - bash <(curl -s https://codecov.io/bash)
+  - |
+    if [ $TRAVIS_PULL_REQUEST = 'false' ]; then
+      sbt ";clean; scalaJsonRpc/releaseEarly"; # The clean is to remove the scoverage instrumentation
+    fi

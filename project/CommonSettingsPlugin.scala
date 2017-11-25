@@ -1,11 +1,8 @@
-import bintray.BintrayPlugin.autoImport.{
-  bintrayOrganization,
-  bintrayPackageLabels
-}
+import bintray.BintrayPlugin.autoImport._
+import ch.epfl.scala.sbt.release.ReleaseEarlyPlugin.autoImport._
 import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin
 import sbt.Keys._
 import sbt._
-import sbtrelease.ReleasePlugin.autoImport.releaseCrossBuild
 
 object CommonSettingsPlugin extends AutoPlugin {
 
@@ -25,9 +22,6 @@ object CommonSettingsPlugin extends AutoPlugin {
       testBuildSettings ++
       publishBuildSettings
 
-  override def projectSettings: Seq[Setting[_]] =
-    publishProjectSettings
-
   private lazy val resolverBuildSettings = Seq(
     conflictManager := ConflictManager.strict
   )
@@ -38,62 +32,55 @@ object CommonSettingsPlugin extends AutoPlugin {
 
   private lazy val scalaBuildSettings = Seq(
     scalaVersion := "2.12.4",
-    crossScalaVersions := Seq("2.11.11", "2.12.3"),
-    // See https://tpolecat.github.io/2017/04/25/scalac-flags.html for explanations. 2.11 doesn't support all of these,
-    // so we simply don't set any of them when building for 2.11. The 2.12 build will pick up any issues anyway.
-    scalacOptions ++= (CrossVersion
-      .binaryScalaVersion(scalaVersion.value) match {
-      case "2.12" =>
-        Seq(
-          "-deprecation",
-          "-encoding",
-          "utf-8",
-          "-explaintypes",
-          "-feature",
-          "-language:existentials",
-          "-language:experimental.macros",
-          "-language:higherKinds",
-          "-language:implicitConversions",
-          "-unchecked",
-          "-Xcheckinit",
-          "-Xfatal-warnings",
-          "-Xfuture",
-          "-Xlint:adapted-args",
-          "-Xlint:by-name-right-associative",
-          "-Xlint:constant",
-          "-Xlint:delayedinit-select",
-          "-Xlint:doc-detached",
-          "-Xlint:inaccessible",
-          "-Xlint:infer-any",
-          "-Xlint:missing-interpolator",
-          "-Xlint:nullary-override",
-          "-Xlint:nullary-unit",
-          "-Xlint:option-implicit",
-          "-Xlint:package-object-classes",
-          "-Xlint:poly-implicit-overload",
-          "-Xlint:private-shadow",
-          "-Xlint:stars-align",
-          "-Xlint:type-parameter-shadow",
-          "-Xlint:unsound-match",
-          "-Yno-adapted-args",
-          "-Ypartial-unification",
-          "-Ywarn-dead-code",
-          "-Ywarn-extra-implicit",
-          "-Ywarn-inaccessible",
-          "-Ywarn-infer-any",
-          "-Ywarn-nullary-override",
-          "-Ywarn-nullary-unit",
-          "-Ywarn-numeric-widen",
-          "-Ywarn-unused:implicits",
-          "-Ywarn-unused:imports",
-          "-Ywarn-unused:locals",
-          "-Ywarn-unused:params",
-          "-Ywarn-unused:patvars",
-          "-Ywarn-unused:privates",
-          "-Ywarn-value-discard"
-        )
-      case "2.11" => Seq("-encoding", "utf-8")
-    }),
+    // See https://tpolecat.github.io/2017/04/25/scalac-flags.html for explanations.
+    scalacOptions ++= Seq(
+      "-deprecation",
+      "-encoding",
+      "utf-8",
+      "-explaintypes",
+      "-feature",
+      "-language:existentials",
+      "-language:experimental.macros",
+      "-language:higherKinds",
+      "-language:implicitConversions",
+      "-unchecked",
+      "-Xcheckinit",
+      "-Xfatal-warnings",
+      "-Xfuture",
+      "-Xlint:adapted-args",
+      "-Xlint:by-name-right-associative",
+      "-Xlint:constant",
+      "-Xlint:delayedinit-select",
+      "-Xlint:doc-detached",
+      "-Xlint:inaccessible",
+      "-Xlint:infer-any",
+      "-Xlint:missing-interpolator",
+      "-Xlint:nullary-override",
+      "-Xlint:nullary-unit",
+      "-Xlint:option-implicit",
+      "-Xlint:package-object-classes",
+      "-Xlint:poly-implicit-overload",
+      "-Xlint:private-shadow",
+      "-Xlint:stars-align",
+      "-Xlint:type-parameter-shadow",
+      "-Xlint:unsound-match",
+      "-Yno-adapted-args",
+      "-Ypartial-unification",
+      "-Ywarn-dead-code",
+      "-Ywarn-extra-implicit",
+      "-Ywarn-inaccessible",
+      "-Ywarn-infer-any",
+      "-Ywarn-nullary-override",
+      "-Ywarn-nullary-unit",
+      "-Ywarn-numeric-widen",
+      "-Ywarn-unused:implicits",
+      "-Ywarn-unused:imports",
+      "-Ywarn-unused:locals",
+      "-Ywarn-unused:params",
+      "-Ywarn-unused:patvars",
+      "-Ywarn-unused:privates",
+      "-Ywarn-value-discard"
+    ),
     dependencyOverrides ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       "org.scala-lang" % "scala-library" % scalaVersion.value,
@@ -127,13 +114,11 @@ object CommonSettingsPlugin extends AutoPlugin {
         browseUrl = url("https://github.com/dhpcs/scala-json-rpc/"),
         connection = "scm:git:https://github.com/dhpcs/scala-json-rpc.git",
         devConnection = Some("scm:git:git@github.com:dhpcs/scala-json-rpc.git")
-      ))
-  )
-
-  private lazy val publishProjectSettings = Seq(
-    bintrayOrganization := Some("dhpcs"),
-    bintrayPackageLabels := Seq("scala", "json-rpc"),
-    releaseCrossBuild := true
+      )),
+    releaseEarlyWith := BintrayPublisher,
+    releaseEarlyNoGpg := true,
+    releaseEarlyEnableInstantReleases := false,
+    bintrayOrganization := Some("dhpcs")
   )
 
 }
