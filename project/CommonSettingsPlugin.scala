@@ -104,9 +104,10 @@ object CommonSettingsPlugin extends AutoPlugin {
         connection = "scm:git:https://github.com/dhpcs/scala-json-rpc.git",
         devConnection = Some("scm:git:git@github.com:dhpcs/scala-json-rpc.git")
       )),
-    releaseEarlyWith := BintrayPublisher,
-    releaseEarlyNoGpg := true,
     releaseEarlyEnableInstantReleases := false,
+    releaseEarlyNoGpg := true,
+    releaseEarlyWith := BintrayPublisher,
+    releaseEarlyEnableSyncToMaven := false,
     bintrayOrganization := Some("dhpcs")
   )
 
