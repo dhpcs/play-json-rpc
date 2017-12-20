@@ -19,7 +19,7 @@ jobs:
     - stage: release
       script: |
         git fetch --unshallow && # So that sbt-dynver derives the version correctly
-          sbt ";scalaJsonRpc/releaseEarly"
+          sbt ";scala-json-rpc/releaseEarly"
 cache:
   directories:
     - $HOME/.ivy2/cache

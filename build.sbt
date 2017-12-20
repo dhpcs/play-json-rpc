@@ -1,4 +1,4 @@
-lazy val scalaJsonRpc = project
+lazy val `scala-json-rpc` = project
   .in(file("scala-json-rpc"))
   .settings(
     name := "scala-json-rpc"
