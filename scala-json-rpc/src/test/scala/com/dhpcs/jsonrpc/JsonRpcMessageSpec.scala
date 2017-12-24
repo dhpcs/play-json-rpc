@@ -9,8 +9,9 @@ import scala.collection.immutable.Seq
 class JsonRpcMessageSpec extends FreeSpec {
 
   "An invalid JsValue" - {
-    val json    = Json.parse("{}")
-    val jsError = JsError("not a valid request, request batch, response, response batch or notification message")
+    val json = Json.parse("{}")
+    val jsError = JsError(
+      "not a valid request, request batch, response, response batch or notification message")
     s"fails to decode with error $jsError" in assert(
       Json.fromJson[JsonRpcMessage](json) === jsError
     )
@@ -33,7 +34,7 @@ class JsonRpcMessageSpec extends FreeSpec {
       )
     }
     "with version of the wrong type" - {
-      val json    = Json.parse("""
+      val json = Json.parse("""
             |{
             |  "jsonrpc":2.0,
             |  "method":"testMethod",
@@ -120,7 +121,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcRequestMessage" in assert(
-        Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+        Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+          jsonRpcRequestMessage)
       )
       s"encodes to $jsonRpcRequestMessageJson" in assert(
         Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -160,7 +162,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
-          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+            jsonRpcRequestMessage)
         )
         s"encodes to $jsonRpcRequestMessageJson" in assert(
           Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -185,7 +188,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
-          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+            jsonRpcRequestMessage)
         )
         s"encodes to $jsonRpcRequestMessageJson" in assert(
           Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -210,7 +214,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
-          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+            jsonRpcRequestMessage)
         )
         s"encodes to $jsonRpcRequestMessageJson" in assert(
           Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -233,7 +238,8 @@ class JsonRpcMessageSpec extends FreeSpec {
               |}""".stripMargin
           )
           s"decodes to $jsonRpcRequestMessage" in assert(
-            Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+            Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+              jsonRpcRequestMessage)
           )
           s"encodes to $jsonRpcRequestMessageJson" in assert(
             Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -261,7 +267,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
-          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+            jsonRpcRequestMessage)
         )
         s"encodes to $jsonRpcRequestMessageJson" in assert(
           Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -286,7 +293,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
-          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+            jsonRpcRequestMessage)
         )
         s"encodes to $jsonRpcRequestMessageJson" in assert(
           Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -311,7 +319,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
-          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+          Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+            jsonRpcRequestMessage)
         )
         s"encodes to $jsonRpcRequestMessageJson" in assert(
           Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -335,7 +344,8 @@ class JsonRpcMessageSpec extends FreeSpec {
               |}""".stripMargin
           )
           s"decodes to $jsonRpcRequestMessage" in assert(
-            Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(jsonRpcRequestMessage)
+            Json.fromJson(jsonRpcRequestMessageJson) === JsSuccess(
+              jsonRpcRequestMessage)
           )
           s"encodes to $jsonRpcRequestMessageJson" in assert(
             Json.toJson(jsonRpcRequestMessage) === jsonRpcRequestMessageJson
@@ -396,10 +406,12 @@ class JsonRpcMessageSpec extends FreeSpec {
           |]""".stripMargin
       )
       s"decodes to $jsonRpcRequestMessageBatch" in assert(
-        Json.fromJson(jsonRpcRequestMessageBatchJson) === JsSuccess(jsonRpcRequestMessageBatch)
+        Json.fromJson(jsonRpcRequestMessageBatchJson) === JsSuccess(
+          jsonRpcRequestMessageBatch)
       )
       s"encodes to $jsonRpcRequestMessageBatchJson" in assert(
-        Json.toJson(jsonRpcRequestMessageBatch) === jsonRpcRequestMessageBatchJson
+        Json
+          .toJson(jsonRpcRequestMessageBatch) === jsonRpcRequestMessageBatchJson
       )
     }
     "with an invalid notification" - {
@@ -439,10 +451,12 @@ class JsonRpcMessageSpec extends FreeSpec {
           |]""".stripMargin
       )
       s"decodes to $jsonRpcRequestMessageBatch" in assert(
-        Json.fromJson(jsonRpcRequestMessageBatchJson) === JsSuccess(jsonRpcRequestMessageBatch)
+        Json.fromJson(jsonRpcRequestMessageBatchJson) === JsSuccess(
+          jsonRpcRequestMessageBatch)
       )
       s"encodes to $jsonRpcRequestMessageBatchJson" in assert(
-        Json.toJson(jsonRpcRequestMessageBatch) === jsonRpcRequestMessageBatchJson
+        Json
+          .toJson(jsonRpcRequestMessageBatch) === jsonRpcRequestMessageBatchJson
       )
     }
   }
@@ -500,8 +514,10 @@ class JsonRpcMessageSpec extends FreeSpec {
       )
       val jsError = JsError(
         Seq(
-          (__ \ "error" \ "code", Seq(JsonValidationError("error.path.missing"))),
-          (__ \ "error" \ "message", Seq(JsonValidationError("error.path.missing")))
+          (__ \ "error" \ "code",
+           Seq(JsonValidationError("error.path.missing"))),
+          (__ \ "error" \ "message",
+           Seq(JsonValidationError("error.path.missing")))
         ))
       s"fails to decode with error $jsError" in assert(
         Json.fromJson[JsonRpcResponseMessage](json) === jsError
@@ -547,7 +563,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
-        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+          jsonRpcResponseMessage)
       )
       s"encodes to $jsonRpcResponseMessageJson" in assert(
         Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -567,7 +584,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
-        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+          jsonRpcResponseMessage)
       )
       s"encodes to $jsonRpcResponseMessageJson" in assert(
         Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -587,7 +605,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
-        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+          jsonRpcResponseMessage)
       )
       s"encodes to $jsonRpcResponseMessageJson" in assert(
         Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -607,7 +626,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
-        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+          jsonRpcResponseMessage)
       )
       s"encodes to $jsonRpcResponseMessageJson" in assert(
         Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -627,7 +647,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
-        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+          jsonRpcResponseMessage)
       )
       s"encodes to $jsonRpcResponseMessageJson" in assert(
         Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -648,7 +669,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
-        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+          jsonRpcResponseMessage)
       )
       s"encodes to $jsonRpcResponseMessageJson" in assert(
         Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -670,7 +692,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
-        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+        Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+          jsonRpcResponseMessage)
       )
       s"encodes to $jsonRpcResponseMessageJson" in assert(
         Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -694,7 +717,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcResponseMessage" in assert(
-          Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+          Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+            jsonRpcResponseMessage)
         )
         s"encodes to $jsonRpcResponseMessageJson" in assert(
           Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -717,7 +741,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcResponseMessage" in assert(
-          Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+          Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+            jsonRpcResponseMessage)
         )
         s"encodes to $jsonRpcResponseMessageJson" in assert(
           Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -740,7 +765,8 @@ class JsonRpcMessageSpec extends FreeSpec {
             |}""".stripMargin
         )
         s"decodes to $jsonRpcResponseMessage" in assert(
-          Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+          Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+            jsonRpcResponseMessage)
         )
         s"encodes to $jsonRpcResponseMessageJson" in assert(
           Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -762,7 +788,8 @@ class JsonRpcMessageSpec extends FreeSpec {
               |}""".stripMargin
           )
           s"decodes to $jsonRpcResponseMessage" in assert(
-            Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(jsonRpcResponseMessage)
+            Json.fromJson(jsonRpcResponseMessageJson) === JsSuccess(
+              jsonRpcResponseMessage)
           )
           s"encodes to $jsonRpcResponseMessageJson" in assert(
             Json.toJson(jsonRpcResponseMessage) === jsonRpcResponseMessageJson
@@ -822,7 +849,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           |]""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessageBatch" in assert(
-        Json.fromJson(jsonRpcResponseMessageBatchJson) === JsSuccess(jsonRpcResponseMessageBatch)
+        Json.fromJson(jsonRpcResponseMessageBatchJson) === JsSuccess(
+          jsonRpcResponseMessageBatch)
       )
       s"encodes to $jsonRpcResponseMessageBatchJson" in assert(
         Json.toJson(jsonRpcResponseMessageBatch) === jsonRpcResponseMessageBatchJson
@@ -926,10 +954,12 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcNotificationMessage" in assert(
-        Json.fromJson(jsonRpcNotificationMessageJson) === JsSuccess(jsonRpcNotificationMessage)
+        Json.fromJson(jsonRpcNotificationMessageJson) === JsSuccess(
+          jsonRpcNotificationMessage)
       )
       s"encodes to $jsonRpcNotificationMessageJson" in assert(
-        Json.toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
+        Json
+          .toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
       )
     }
     "with a params array" - {
@@ -949,10 +979,12 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcNotificationMessage" in assert(
-        Json.fromJson(jsonRpcNotificationMessageJson) === JsSuccess(jsonRpcNotificationMessage)
+        Json.fromJson(jsonRpcNotificationMessageJson) === JsSuccess(
+          jsonRpcNotificationMessage)
       )
       s"encodes to $jsonRpcNotificationMessageJson" in assert(
-        Json.toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
+        Json
+          .toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
       )
     }
     "with a params object" - {
@@ -972,10 +1004,12 @@ class JsonRpcMessageSpec extends FreeSpec {
           |}""".stripMargin
       )
       s"decodes to $jsonRpcNotificationMessage" in assert(
-        Json.fromJson(jsonRpcNotificationMessageJson) === JsSuccess(jsonRpcNotificationMessage)
+        Json.fromJson(jsonRpcNotificationMessageJson) === JsSuccess(
+          jsonRpcNotificationMessage)
       )
       s"encodes to $jsonRpcNotificationMessageJson" in assert(
-        Json.toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
+        Json
+          .toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
       )
     }
   }

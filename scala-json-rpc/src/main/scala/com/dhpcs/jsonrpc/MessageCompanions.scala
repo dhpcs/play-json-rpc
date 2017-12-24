@@ -10,7 +10,8 @@ trait CommandCompanion[A] {
 
   private[this] lazy val (methodReads, classWrites) = CommandFormats
 
-  protected[this] val CommandFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, OWrites[_ <: A])])
+  protected[this] val CommandFormats: (Map[String, Reads[_ <: A]],
+                                       Map[Class[_], (String, OWrites[_ <: A])])
 
   def read(jsonRpcRequestMessage: JsonRpcRequestMessage): JsResult[_ <: A] =
     methodReads.get(jsonRpcRequestMessage.method) match {
@@ -30,7 +31,9 @@ trait CommandCompanion[A] {
 
   def write[B <: A](command: B, id: CorrelationId): JsonRpcRequestMessage = {
     val (method, writes) =
-      classWrites.getOrElse(command.getClass, sys.error(s"No format found for ${command.getClass}"))
+      classWrites.getOrElse(
+        command.getClass,
+        sys.error(s"No format found for ${command.getClass}"))
     val bWrites = writes.asInstanceOf[OWrites[B]]
     JsonRpcRequestMessage(method, bWrites.writes(command), id)
   }
@@ -40,18 +43,23 @@ trait ResponseCompanion[A] {
 
   private[this] lazy val (methodReads, classWrites) = ResponseFormats
 
-  protected[this] val ResponseFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, Writes[_ <: A])])
+  protected[this] val ResponseFormats: (Map[String, Reads[_ <: A]],
+                                        Map[Class[_], (String, Writes[_ <: A])])
 
-  def read(jsonRpcResponseSuccessMessage: JsonRpcResponseSuccessMessage, method: String): JsResult[_ <: A] =
+  def read(jsonRpcResponseSuccessMessage: JsonRpcResponseSuccessMessage,
+           method: String): JsResult[_ <: A] =
     methodReads(method).reads(jsonRpcResponseSuccessMessage.result) match {
       // We do this just to reset the path in the success case.
       case JsError(invalid)    => JsError(invalid)
       case JsSuccess(valid, _) => JsSuccess(valid)
     }
 
-  def write[B <: A](response: B, id: CorrelationId): JsonRpcResponseSuccessMessage = {
+  def write[B <: A](response: B,
+                    id: CorrelationId): JsonRpcResponseSuccessMessage = {
     val (_, writes) =
-      classWrites.getOrElse(response.getClass, sys.error(s"No format found for ${response.getClass}"))
+      classWrites.getOrElse(
+        response.getClass,
+        sys.error(s"No format found for ${response.getClass}"))
     val bWrites = writes.asInstanceOf[Writes[B]]
     JsonRpcResponseSuccessMessage(bWrites.writes(response), id)
   }
@@ -61,15 +69,20 @@ trait NotificationCompanion[A] {
 
   private[this] lazy val (methodReads, classWrites) = NotificationFormats
 
-  protected[this] val NotificationFormats: (Map[String, Reads[_ <: A]], Map[Class[_], (String, OWrites[_ <: A])])
+  protected[this] val NotificationFormats: (Map[String, Reads[_ <: A]],
+                                            Map[Class[_],
+                                                (String, OWrites[_ <: A])])
 
-  def read(jsonRpcNotificationMessage: JsonRpcNotificationMessage): JsResult[_ <: A] =
+  def read(jsonRpcNotificationMessage: JsonRpcNotificationMessage)
+    : JsResult[_ <: A] =
     methodReads.get(jsonRpcNotificationMessage.method) match {
-      case None => JsError(s"unknown method ${jsonRpcNotificationMessage.method}")
+      case None =>
+        JsError(s"unknown method ${jsonRpcNotificationMessage.method}")
       case Some(reads) =>
         jsonRpcNotificationMessage.params match {
-          case NoParams       => JsError("notification parameters must be given")
-          case ArrayParams(_) => JsError("notification parameters must be named")
+          case NoParams => JsError("notification parameters must be given")
+          case ArrayParams(_) =>
+            JsError("notification parameters must be named")
           case ObjectParams(value) =>
             reads.reads(value) match {
               // We do this just to reset the path in the success case.
@@ -81,7 +94,9 @@ trait NotificationCompanion[A] {
 
   def write[B <: A](notification: B): JsonRpcNotificationMessage = {
     val (method, writes) =
-      classWrites.getOrElse(notification.getClass, sys.error(s"No format found for ${notification.getClass}"))
+      classWrites.getOrElse(
+        notification.getClass,
+        sys.error(s"No format found for ${notification.getClass}"))
     val bWrites = writes.asInstanceOf[OWrites[B]]
     JsonRpcNotificationMessage(method, bWrites.writes(notification))
   }
@@ -89,14 +104,15 @@ trait NotificationCompanion[A] {
 
 object Message {
 
-  implicit class MessageFormat[A: ClassTag](methodAndFormat: (String, Format[A])) {
-    private[Message] val classTag         = implicitly[ClassTag[A]]
+  implicit class MessageFormat[A: ClassTag](
+      methodAndFormat: (String, Format[A])) {
+    private[Message] val classTag = implicitly[ClassTag[A]]
     private[Message] val (method, format) = methodAndFormat
   }
 
   object MessageFormats {
-    def apply[A, W[_] <: Writes[_]](
-        messageFormats: MessageFormat[_ <: A]*): (Map[String, Reads[_ <: A]], Map[Class[_], (String, W[_ <: A])]) = {
+    def apply[A, W[_] <: Writes[_]](messageFormats: MessageFormat[_ <: A]*)
+      : (Map[String, Reads[_ <: A]], Map[Class[_], (String, W[_ <: A])]) = {
       val methods = messageFormats.map(_.method)
       require(
         methods == methods.distinct,
@@ -114,7 +130,8 @@ object Message {
       val writes = messageFormats.map(
         messageFormat =>
           messageFormat.classTag.runtimeClass ->
-            (messageFormat.method             -> messageFormat.format.asInstanceOf[W[_ <: A]]))
+            (messageFormat.method -> messageFormat.format
+              .asInstanceOf[W[_ <: A]]))
       (reads.toMap, writes.toMap)
     }
   }

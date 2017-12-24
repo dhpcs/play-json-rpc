@@ -12,7 +12,7 @@ object MessageCompanionsSpec {
 
   sealed abstract class Message
 
-  sealed abstract class Command                           extends Message
+  sealed abstract class Command extends Message
   final case class UpdateAccountCommand(account: Account) extends Command
   final case class AddTransactionCommand(from: Int,
                                          to: Int,
@@ -24,7 +24,8 @@ object MessageCompanionsSpec {
   }
 
   object AddTransactionCommand {
-    implicit final val AddTransactionCommandFormat: Format[AddTransactionCommand] = (
+    implicit final val AddTransactionCommandFormat
+      : Format[AddTransactionCommand] = (
       (JsPath \ "from").format[Int] and
         (JsPath \ "to").format[Int] and
         (JsPath \ "value").format(min[BigDecimal](0)) and
@@ -50,13 +51,13 @@ object MessageCompanionsSpec {
 
   object Command extends CommandCompanion[Command] {
     override final val CommandFormats = MessageFormats(
-      "updateAccount"  -> Json.format[UpdateAccountCommand],
+      "updateAccount" -> Json.format[UpdateAccountCommand],
       "addTransaction" -> Json.format[AddTransactionCommand]
     )
   }
 
-  sealed abstract class Response                   extends Message
-  case object UpdateAccountResponse                extends Response
+  sealed abstract class Response extends Message
+  case object UpdateAccountResponse extends Response
   final case class AddTransactionResponse(id: Int) extends Response
 
   object Response extends ResponseCompanion[Response] {
@@ -69,18 +70,22 @@ object MessageCompanionsSpec {
     )
   }
 
-  sealed abstract class Notification                                      extends Message
-  final case class AccountUpdatedNotification(account: Account)           extends Notification
-  final case class TransactionAddedNotification(transaction: Transaction) extends Notification
+  sealed abstract class Notification extends Message
+  final case class AccountUpdatedNotification(account: Account)
+      extends Notification
+  final case class TransactionAddedNotification(transaction: Transaction)
+      extends Notification
 
   object Notification extends NotificationCompanion[Notification] {
     override final val NotificationFormats = MessageFormats(
-      "accountUpdated"   -> Json.format[AccountUpdatedNotification],
+      "accountUpdated" -> Json.format[AccountUpdatedNotification],
       "transactionAdded" -> Json.format[TransactionAddedNotification]
     )
   }
 
-  final case class Account(id: Int, name: Option[String] = None, metadata: Option[JsObject] = None)
+  final case class Account(id: Int,
+                           name: Option[String] = None,
+                           metadata: Option[JsObject] = None)
 
   object Account {
     implicit final val AccountFormat: Format[Account] = Json.format[Account]
@@ -182,9 +187,9 @@ class MessageCompanionsSpec extends FreeSpec {
       val jsonRpcRequestMessage = JsonRpcRequestMessage(
         method = "addTransaction",
         Json.obj(
-          "from"        -> 0,
-          "to"          -> 1,
-          "value"       -> BigDecimal(1000000),
+          "from" -> 0,
+          "to" -> 1,
+          "value" -> BigDecimal(1000000),
           "description" -> "Property purchase",
           "metadata" -> Json.obj(
             "property" -> "The TARDIS"
@@ -203,14 +208,15 @@ class MessageCompanionsSpec extends FreeSpec {
 
   "A Response of type AddTransactionResponse" - {
     val addTransactionResponse = AddTransactionResponse(id = 0)
-    val id                     = NumericCorrelationId(1)
+    val id = NumericCorrelationId(1)
     val jsonRpcResponseMessage = JsonRpcResponseSuccessMessage(
       JsNumber(0),
       NumericCorrelationId(1)
     )
     val method = "addTransaction"
     s"decodes to $addTransactionResponse" in assert(
-      Response.read(jsonRpcResponseMessage, method) === JsSuccess(addTransactionResponse)
+      Response.read(jsonRpcResponseMessage, method) === JsSuccess(
+        addTransactionResponse)
     )
     s"encodes to $jsonRpcResponseMessage" in assert(
       Response.write(addTransactionResponse, id) === jsonRpcResponseMessage
@@ -260,14 +266,17 @@ class MessageCompanionsSpec extends FreeSpec {
       val jsonRpcNotificationMessage = JsonRpcNotificationMessage(
         method = "transactionAdded",
         params = Json.obj(
-          "transaction" -> Json.parse("""{"id":0,"from":0,"to":1,"value":1000000}""")
+          "transaction" -> Json.parse(
+            """{"id":0,"from":0,"to":1,"value":1000000}""")
         )
       )
       s"decodes to $clientJoinedZoneNotification" in assert(
-        Notification.read(jsonRpcNotificationMessage) === JsSuccess(clientJoinedZoneNotification)
+        Notification.read(jsonRpcNotificationMessage) === JsSuccess(
+          clientJoinedZoneNotification)
       )
       s"encodes to $jsonRpcNotificationMessage" in assert(
-        Notification.write(clientJoinedZoneNotification) === jsonRpcNotificationMessage
+        Notification
+          .write(clientJoinedZoneNotification) === jsonRpcNotificationMessage
       )
     }
   }
