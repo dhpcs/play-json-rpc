@@ -13,9 +13,8 @@ jobs:
   include:
     - stage: test
       script: sbt ";reload plugins; sbt:scalafmt::test; scalafmt::test; reload return;
-        sbt:scalafmt::test; scalafmt::test; test:scalafmt::test"
-    - stage: test
-      script: sbt ";compile; coverage; test; coverageReport" && bash <(curl -s https://codecov.io/bash)
+        sbt:scalafmt::test; scalafmt::test; test:scalafmt::test;
+        compile; coverage; test; coverageReport" && bash <(curl -s https://codecov.io/bash)
     - stage: release
       script: |
         git fetch --unshallow && # So that sbt-dynver derives the version correctly
