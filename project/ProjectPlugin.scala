@@ -4,7 +4,7 @@ import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin
 import sbt.Keys._
 import sbt._
 
-object CommonSettingsPlugin extends AutoPlugin {
+object ProjectPlugin extends AutoPlugin {
 
   override def trigger: PluginTrigger = allRequirements
 
@@ -15,17 +15,17 @@ object CommonSettingsPlugin extends AutoPlugin {
         "sbt:scalafmt::test; scalafmt::test; test:scalafmt::test; test"
     )
 
-  override def buildSettings: Seq[Setting[_]] =
-    scalaBuildSettings ++
-      scalafmtBuildSettings ++
-      testBuildSettings ++
-      publishBuildSettings
+  override def projectSettings: Seq[Setting[_]] =
+    scalaProjectSettings ++
+      scalafmtProjectSettings ++
+      testProjectSettings ++
+      publishProjectSettings
 
-  private lazy val scalafmtBuildSettings = Seq(
+  private lazy val scalafmtProjectSettings = Seq(
     ScalafmtCorePlugin.autoImport.scalafmtVersion := "1.3.0"
   )
 
-  private lazy val scalaBuildSettings = Seq(
+  private lazy val scalaProjectSettings = Seq(
     scalaVersion := "2.12.4",
     // See https://tpolecat.github.io/2017/04/25/scalac-flags.html for explanations.
     scalacOptions ++= Seq(
@@ -78,14 +78,17 @@ object CommonSettingsPlugin extends AutoPlugin {
     )
   )
 
-  private lazy val testBuildSettings = Seq(
+  private lazy val testProjectSettings = Seq(
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
 
-  private lazy val publishBuildSettings = Seq(
+  private lazy val publishProjectSettings = Seq(
     homepage := Some(url("https://github.com/dhpcs/scala-json-rpc/")),
     startYear := Some(2015),
-    description := "A Scala library providing types and JSON format typeclass instances for JSON-RPC 2.0 messages along with support for marshalling application level commands, responses and notifications via JSON-RPC 2.0.",
+    description := "A Scala library providing types and JSON format " +
+      "typeclass instances for JSON-RPC 2.0 messages along with support " +
+      "for marshalling application level commands, responses and " +
+      "notifications via JSON-RPC 2.0.",
     licenses += "Apache-2.0" -> url(
       "https://www.apache.org/licenses/LICENSE-2.0.txt"),
     organization := "com.dhpcs",
