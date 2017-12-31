@@ -11,7 +11,8 @@ class JsonRpcMessageSpec extends FreeSpec {
   "An invalid JsValue" - {
     val json = Json.parse("{}")
     val jsError = JsError(
-      "not a valid request, request batch, response, response batch or notification message")
+      "not a valid request, request batch, response, response batch or " +
+        "notification message")
     s"fails to decode with error $jsError" in assert(
       Json.fromJson[JsonRpcMessage](json) === jsError
     )
@@ -22,10 +23,10 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"3.0",
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "jsonrpc" : "3.0",
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.invalid")
@@ -34,12 +35,13 @@ class JsonRpcMessageSpec extends FreeSpec {
       )
     }
     "with version of the wrong type" - {
-      val json = Json.parse("""
+      val json =
+        Json.parse("""
             |{
-            |  "jsonrpc":2.0,
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "jsonrpc" : 2.0,
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin)
       val jsError = JsError(__ \ "jsonrpc", "error.expected.jsstring")
       s"fails to decode with error $jsError" in assert(
@@ -50,9 +52,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.path.missing")
@@ -65,10 +67,10 @@ class JsonRpcMessageSpec extends FreeSpec {
         Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":3.0,
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "jsonrpc" : "2.0",
+            |  "method" : 3.0,
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin
         )
       val jsError = JsError(__ \ "method", "error.expected.jsstring")
@@ -81,9 +83,9 @@ class JsonRpcMessageSpec extends FreeSpec {
         Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "jsonrpc" : "2.0",
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin
         )
       val jsError = JsError(__ \ "method", "error.path.missing")
@@ -95,10 +97,10 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "method":"testMethod",
-          |  "params":"params",
-          |  "id":0
+          |  "jsonrpc" : "2.0",
+          |  "method" : "testMethod",
+          |  "params" : "params",
+          |  "id" : 0
           |}""".stripMargin
       )
       val jsError = JsError(__ \ "params", "error.expected.jsobjectorjsarray")
@@ -115,9 +117,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcRequestMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "method":"testMethod",
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "method" : "testMethod",
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcRequestMessage" in assert(
@@ -132,9 +134,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"}
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" }
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "id", "error.path.missing")
@@ -155,10 +157,10 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":["param1","param2"],
-            |  "id":null
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : [ "param1", "param2" ],
+            |  "id" : null
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
@@ -181,10 +183,10 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":["param1","param2"],
-            |  "id":"one"
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : [ "param1", "param2" ],
+            |  "id" : "one"
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
@@ -207,10 +209,10 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":["param1","param2"],
-            |  "id":1
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : [ "param1", "param2" ],
+            |  "id" : 1
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
@@ -231,10 +233,10 @@ class JsonRpcMessageSpec extends FreeSpec {
           )
           val jsonRpcRequestMessageJson = Json.parse(
             """{
-              |  "jsonrpc":"2.0",
-              |  "method":"testMethod",
-              |  "params":["param1","param2"],
-              |  "id":1.1
+              |  "jsonrpc" : "2.0",
+              |  "method" : "testMethod",
+              |  "params" : [ "param1", "param2" ],
+              |  "id" : 1.1
               |}""".stripMargin
           )
           s"decodes to $jsonRpcRequestMessage" in assert(
@@ -260,10 +262,10 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":null
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : null
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
@@ -286,10 +288,10 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":"one"
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : "one"
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
@@ -312,10 +314,10 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcRequestMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"},
-            |  "id":1
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 1
             |}""".stripMargin
         )
         s"decodes to $jsonRpcRequestMessage" in assert(
@@ -337,10 +339,10 @@ class JsonRpcMessageSpec extends FreeSpec {
           val jsonRpcRequestMessageJson = Json.parse(
             """
               |{
-              |  "jsonrpc":"2.0",
-              |  "method":"testMethod",
-              |  "params":{"param1":"param1","param2":"param2"},
-              |  "id":1.1
+              |  "jsonrpc" : "2.0",
+              |  "method" : "testMethod",
+              |  "params" : { "param1" : "param1", "param2" : "param2" },
+              |  "id" : 1.1
               |}""".stripMargin
           )
           s"decodes to $jsonRpcRequestMessage" in assert(
@@ -372,9 +374,9 @@ class JsonRpcMessageSpec extends FreeSpec {
         """
             |[
             |  {
-            |    "jsonrpc":"2.0",
-            |    "params":{"param1":"param1","param2":"param2"},
-            |    "id":1
+            |    "jsonrpc" : "2.0",
+            |    "params" : { "param1" : "param1", "param2" : "param2" },
+            |    "id" : 1
             |  }
             |]""".stripMargin
       )
@@ -398,10 +400,10 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcRequestMessageBatchJson = Json.parse(
         """[
           |  {
-          |    "jsonrpc":"2.0",
-          |    "method":"testMethod",
-          |    "params":{"param1":"param1","param2":"param2"},
-          |    "id":1
+          |    "jsonrpc" : "2.0",
+          |    "method" : "testMethod",
+          |    "params" : { "param1" : "param1", "param2" : "param2" },
+          |    "id" : 1
           |  }
           |]""".stripMargin
       )
@@ -419,7 +421,7 @@ class JsonRpcMessageSpec extends FreeSpec {
         """
             |[
             |  {
-            |    "jsonrpc":"2.0"
+            |    "jsonrpc" : "2.0"
             |  }
             |]""".stripMargin
       )
@@ -444,9 +446,9 @@ class JsonRpcMessageSpec extends FreeSpec {
         """
           |[
           |  {
-          |    "jsonrpc":"2.0",
-          |    "method":"testMethod",
-          |    "params":{"param1":"param1","param2":"param2"}
+          |    "jsonrpc" : "2.0",
+          |    "method" : "testMethod",
+          |    "params" : { "param1" : "param1", "param2" : "param2" }
           |  }
           |]""".stripMargin
       )
@@ -455,8 +457,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           jsonRpcRequestMessageBatch)
       )
       s"encodes to $jsonRpcRequestMessageBatchJson" in assert(
-        Json
-          .toJson(jsonRpcRequestMessageBatch) === jsonRpcRequestMessageBatchJson
+        Json.toJson(jsonRpcRequestMessageBatch) ===
+          jsonRpcRequestMessageBatchJson
       )
     }
   }
@@ -466,9 +468,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"3.0",
-            |  "result":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "jsonrpc" : "3.0",
+            |  "result" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.invalid")
@@ -480,9 +482,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":2.0,
-            |  "result":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "jsonrpc" :2.0,
+            |  "result" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.expected.jsstring")
@@ -494,8 +496,8 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "result":{"param1":"param1","param2":"param2"},
-            |  "id":0
+            |  "result" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 0
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.path.missing")
@@ -507,9 +509,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"2.0",
-            |  "error":"error",
-            |  "id":0
+            |  "jsonrpc" : "2.0",
+            |  "error" : "error",
+            |  "id" : 0
             |}""".stripMargin
       )
       val jsError = JsError(
@@ -527,8 +529,8 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"2.0",
-            |  "id":0
+            |  "jsonrpc" : "2.0",
+            |  "id" : 0
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "result", "error.path.missing")
@@ -540,8 +542,8 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"2.0",
-            |  "result":{"param1":"param1","param2":"param2"}
+            |  "jsonrpc" : "2.0",
+            |  "result" : { "param1" : "param1", "param2" : "param2" }
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "id", "error.path.missing")
@@ -557,9 +559,16 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "error":{"code":-32700,"message":"Parse error","data":{"meaning":"Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.","error":"Boom"}},
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "error" : {
+          |    "code" : -32700,
+          |    "message" : "Parse error",
+          |    "data" : {
+          |      "meaning" : "Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.",
+          |      "error" : "Boom"
+          |    }
+          |  },
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
@@ -578,9 +587,21 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "error":{"code":-32600,"message":"Invalid Request","data":{"meaning":"The JSON sent is not a valid Request object.","error":{"obj.method":[{"msg":["error.path.missing"],"args":[]}]}}},
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "error" : {
+          |    "code" : -32600,
+          |    "message" : "Invalid Request",
+          |    "data" : {
+          |      "meaning" : "The JSON sent is not a valid Request object.",
+          |      "error" : {
+          |        "obj.method" : [ {
+          |          "msg" : [ "error.path.missing" ],
+          |          "args" : []
+          |        } ]
+          |      }
+          |    }
+          |  },
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
@@ -599,9 +620,16 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "error":{"code":-32601,"message":"Method not found","data":{"meaning":"The method does not exist / is not available.","error":"The method \"foo\" is not implemented."}},
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "error" : {
+          |    "code" : -32601,
+          |    "message" : "Method not found",
+          |    "data" : {
+          |      "meaning" : "The method does not exist / is not available.",
+          |      "error" : "The method \"foo\" is not implemented."
+          |    }
+          |  },
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
@@ -620,9 +648,21 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "error":{"code":-32602,"message":"Invalid params","data":{"meaning":"Invalid method parameter(s).","error":{"obj.arg1":[{"msg":["error.path.missing"],"args":[]}]}}},
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "error" : {
+          |    "code" : -32602,
+          |    "message" : "Invalid params",
+          |    "data" : {
+          |      "meaning" : "Invalid method parameter(s).",
+          |      "error" : {
+          |        "obj.arg1" : [ {
+          |          "msg" : [ "error.path.missing" ],
+          |          "args" : []
+          |        } ]
+          |      }
+          |    }
+          |  },
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
@@ -641,9 +681,14 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "error":{"code":-32603,"message":"Internal error","data":{"meaning":"Internal JSON-RPC error."}},
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "error" : { "code" : -32603,
+          |    "message" : "Internal error",
+          |    "data" : {
+          |      "meaning" : "Internal JSON-RPC error."
+          |    }
+          |  },
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
@@ -663,9 +708,15 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "error":{"code":-32099,"message":"Server error","data":{"meaning":"Something went wrong in the receiving application."}},
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "error" : {
+          |    "code" : -32099,
+          |    "message" : "Server error",
+          |    "data" : {
+          |      "meaning" : "Something went wrong in the receiving application."
+          |    }
+          |  },
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
@@ -677,18 +728,19 @@ class JsonRpcMessageSpec extends FreeSpec {
       )
     }
     "with an application error" - {
-      val jsonRpcResponseMessage = JsonRpcResponseErrorMessage.applicationError(
-        code = -31999,
-        message = "Boom",
-        data = None,
-        NumericCorrelationId(1)
-      )
+      val jsonRpcResponseMessage =
+        JsonRpcResponseErrorMessage.applicationError(
+          code = -31999,
+          message = "Boom",
+          data = None,
+          NumericCorrelationId(1)
+        )
       val jsonRpcResponseMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "error":{"code":-31999,"message":"Boom"},
-          |  "id":1
+          |  "jsonrpc" : "2.0",
+          |  "error" : { "code" : -31999, "message" : "Boom" },
+          |  "id" : 1
           |}""".stripMargin
       )
       s"decodes to $jsonRpcResponseMessage" in assert(
@@ -711,9 +763,9 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcResponseMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "result":{"param1":"param1","param2":"param2"},
-            |  "id":null
+            |  "jsonrpc" : "2.0",
+            |  "result" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : null
             |}""".stripMargin
         )
         s"decodes to $jsonRpcResponseMessage" in assert(
@@ -735,9 +787,9 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcResponseMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "result":{"param1":"param1","param2":"param2"},
-            |  "id":"one"
+            |  "jsonrpc" : "2.0",
+            |  "result" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : "one"
             |}""".stripMargin
         )
         s"decodes to $jsonRpcResponseMessage" in assert(
@@ -759,9 +811,9 @@ class JsonRpcMessageSpec extends FreeSpec {
         val jsonRpcResponseMessageJson = Json.parse(
           """
             |{
-            |  "jsonrpc":"2.0",
-            |  "result":{"param1":"param1","param2":"param2"},
-            |  "id":1
+            |  "jsonrpc" : "2.0",
+            |  "result" : { "param1" : "param1", "param2" : "param2" },
+            |  "id" : 1
             |}""".stripMargin
         )
         s"decodes to $jsonRpcResponseMessage" in assert(
@@ -782,9 +834,9 @@ class JsonRpcMessageSpec extends FreeSpec {
           val jsonRpcResponseMessageJson = Json.parse(
             """
               |{
-              |  "jsonrpc":"2.0",
-              |  "result":{"param1":"param1","param2":"param2"},
-              |  "id":1.1
+              |  "jsonrpc" : "2.0",
+              |  "result" : { "param1" : "param1", "param2" : "param2" },
+              |  "id" : 1.1
               |}""".stripMargin
           )
           s"decodes to $jsonRpcResponseMessage" in assert(
@@ -816,8 +868,8 @@ class JsonRpcMessageSpec extends FreeSpec {
         """
             |[
             |  {
-            |    "jsonrpc":"2.0",
-            |    "id":1
+            |    "jsonrpc" : "2.0",
+            |    "id" : 1
             |  }
             |]""".stripMargin
       )
@@ -842,9 +894,9 @@ class JsonRpcMessageSpec extends FreeSpec {
         """
           |[
           |  {
-          |    "jsonrpc":"2.0",
-          |    "result":{"param1":"param1","param2":"param2"},
-          |    "id":1
+          |    "jsonrpc" : "2.0",
+          |    "result" : { "param1" : "param1", "param2" : "param2" },
+          |    "id" : 1
           |  }
           |]""".stripMargin
       )
@@ -853,7 +905,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           jsonRpcResponseMessageBatch)
       )
       s"encodes to $jsonRpcResponseMessageBatchJson" in assert(
-        Json.toJson(jsonRpcResponseMessageBatch) === jsonRpcResponseMessageBatchJson
+        Json.toJson(jsonRpcResponseMessageBatch) ===
+          jsonRpcResponseMessageBatchJson
       )
     }
   }
@@ -863,9 +916,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"3.0",
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"}
+            |  "jsonrpc" : "3.0",
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" }
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.invalid")
@@ -877,9 +930,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":2.0,
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"}
+            |  "jsonrpc" :2.0,
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" }
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.expected.jsstring")
@@ -891,8 +944,8 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "method":"testMethod",
-            |  "params":{"param1":"param1","param2":"param2"}
+            |  "method" : "testMethod",
+            |  "params" : { "param1" : "param1", "param2" : "param2" }
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "jsonrpc", "error.path.missing")
@@ -904,9 +957,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":3.0,
-            |  "params":{"param1":"param1","param2":"param2"}
+            |  "jsonrpc" : "2.0",
+            |  "method" : 3.0,
+            |  "params" : { "param1" : "param1", "param2" : "param2" }
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "method", "error.expected.jsstring")
@@ -918,8 +971,8 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"2.0",
-            |  "params":{"param1":"param1","param2":"param2"}
+            |  "jsonrpc" : "2.0",
+            |  "params" : { "param1" : "param1", "param2" : "param2" }
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "method", "error.path.missing")
@@ -931,9 +984,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val json = Json.parse(
         """
             |{
-            |  "jsonrpc":"2.0",
-            |  "method":"testMethod",
-            |  "params":"params"
+            |  "jsonrpc" : "2.0",
+            |  "method" : "testMethod",
+            |  "params" : "params"
             |}""".stripMargin
       )
       val jsError = JsError(__ \ "params", "error.expected.jsobjectorjsarray")
@@ -949,8 +1002,8 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcNotificationMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "method":"testMethod"
+          |  "jsonrpc" : "2.0",
+          |  "method" : "testMethod"
           |}""".stripMargin
       )
       s"decodes to $jsonRpcNotificationMessage" in assert(
@@ -958,8 +1011,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           jsonRpcNotificationMessage)
       )
       s"encodes to $jsonRpcNotificationMessageJson" in assert(
-        Json
-          .toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
+        Json.toJson(jsonRpcNotificationMessage) ===
+          jsonRpcNotificationMessageJson
       )
     }
     "with a params array" - {
@@ -973,9 +1026,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcNotificationMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "method":"testMethod",
-          |  "params":["param1","param2"]
+          |  "jsonrpc" : "2.0",
+          |  "method" : "testMethod",
+          |  "params" : [ "param1", "param2" ]
           |}""".stripMargin
       )
       s"decodes to $jsonRpcNotificationMessage" in assert(
@@ -983,8 +1036,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           jsonRpcNotificationMessage)
       )
       s"encodes to $jsonRpcNotificationMessageJson" in assert(
-        Json
-          .toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
+        Json.toJson(jsonRpcNotificationMessage) ===
+          jsonRpcNotificationMessageJson
       )
     }
     "with a params object" - {
@@ -998,9 +1051,9 @@ class JsonRpcMessageSpec extends FreeSpec {
       val jsonRpcNotificationMessageJson = Json.parse(
         """
           |{
-          |  "jsonrpc":"2.0",
-          |  "method":"testMethod",
-          |  "params":{"param1":"param1","param2":"param2"}
+          |  "jsonrpc" : "2.0",
+          |  "method" : "testMethod",
+          |  "params" : { "param1" : "param1", "param2" : "param2" }
           |}""".stripMargin
       )
       s"decodes to $jsonRpcNotificationMessage" in assert(
@@ -1008,8 +1061,8 @@ class JsonRpcMessageSpec extends FreeSpec {
           jsonRpcNotificationMessage)
       )
       s"encodes to $jsonRpcNotificationMessageJson" in assert(
-        Json
-          .toJson(jsonRpcNotificationMessage) === jsonRpcNotificationMessageJson
+        Json.toJson(jsonRpcNotificationMessage) ===
+          jsonRpcNotificationMessageJson
       )
     }
   }

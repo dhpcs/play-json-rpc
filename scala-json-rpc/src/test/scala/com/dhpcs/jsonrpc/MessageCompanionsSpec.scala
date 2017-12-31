@@ -198,7 +198,8 @@ class MessageCompanionsSpec extends FreeSpec {
         NumericCorrelationId(1)
       )
       s"decodes to $addTransactionCommand" in assert(
-        Command.read(jsonRpcRequestMessage) === JsSuccess(addTransactionCommand)
+        Command.read(jsonRpcRequestMessage) ===
+          JsSuccess(addTransactionCommand)
       )
       s"encodes to $jsonRpcRequestMessage" in assert(
         Command.write(addTransactionCommand, id) === jsonRpcRequestMessage
@@ -267,7 +268,7 @@ class MessageCompanionsSpec extends FreeSpec {
         method = "transactionAdded",
         params = Json.obj(
           "transaction" -> Json.parse(
-            """{"id":0,"from":0,"to":1,"value":1000000}""")
+            """{ "id" : 0, "from" : 0, "to" : 1, "value" : 1000000 }""")
         )
       )
       s"decodes to $clientJoinedZoneNotification" in assert(

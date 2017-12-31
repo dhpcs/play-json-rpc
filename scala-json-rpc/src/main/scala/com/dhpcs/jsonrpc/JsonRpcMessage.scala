@@ -85,9 +85,11 @@ object JsonRpcMessage {
         .map(m => m: JsonRpcMessage) orElse
       __.read(JsonRpcNotificationMessage.JsonRpcNotificationMessageFormat)
         .map(m => m: JsonRpcMessage) orElse
-      Reads(_ =>
-        JsError(
-          "not a valid request, request batch, response, response batch or notification message")),
+      Reads(
+        _ =>
+          JsError(
+            "not a valid request, request batch, response, response batch " +
+              "or notification message")),
     Writes {
       case jsonRpcRequestMessage: JsonRpcRequestMessage =>
         JsonRpcRequestMessage.JsonRpcRequestMessageFormat.writes(
@@ -283,7 +285,8 @@ object JsonRpcResponseErrorMessage {
     ParseErrorCode,
     message = "Parse error",
     meaning =
-      "Invalid JSON was received by the server.\nAn error occurred on the server while parsing the JSON text.",
+      "Invalid JSON was received by the server.\nAn error occurred on the " +
+        "server while parsing the JSON text.",
     error = Some(JsString(exception.getMessage)),
     id
   )
@@ -379,8 +382,9 @@ final case class JsonRpcResponseMessageBatch(
 }
 
 object JsonRpcResponseMessageBatch {
-  // This prevents a cyclic dependency on JsonRpcMessageFormat that would otherwise be chosen during implicit
-  // resolution due to Writes being contravariant, combined with https://issues.scala-lang.org/browse/SI-2509.
+  // This prevents a cyclic dependency on JsonRpcMessageFormat that would
+  // otherwise be chosen during implicit resolution due to Writes being
+  // contravariant, combined with https://issues.scala-lang.org/browse/SI-2509.
   // See also: https://github.com/playframework/play-json/issues/51.
   import JsonRpcResponseMessage.JsonRpcResponseMessageFormat
   implicit final lazy val JsonRpcResponseMessageBatchFormat
