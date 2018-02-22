@@ -6,5 +6,5 @@ lazy val `scala-json-rpc` = project
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % "2.6.8",
-      "org.scalatest" %% "scalatest" % "3.0.4" % Test
+      "org.scalatest" %% "scalatest" % "3.0.5" % Test
     ))
