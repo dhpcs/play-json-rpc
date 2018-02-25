@@ -342,11 +342,11 @@ object JsonRpcResponseErrorMessage {
     )
   }
 
-  private def rpcError(code: Int,
-                       message: String,
-                       meaning: String,
-                       error: Option[JsValue],
-                       id: CorrelationId): JsonRpcResponseErrorMessage =
+  private[this] def rpcError(code: Int,
+                             message: String,
+                             meaning: String,
+                             error: Option[JsValue],
+                             id: CorrelationId): JsonRpcResponseErrorMessage =
     new JsonRpcResponseErrorMessage(
       code,
       message,
